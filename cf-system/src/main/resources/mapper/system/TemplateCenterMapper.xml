@@ -1,0 +1,147 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.cf.system.mapper.TemplateCenterMapper">
+    
+    <resultMap type="TemplateCenter" id="TemplateCenterResult">
+        <result property="templateId"    column="template_id"    />
+        <result property="platformCode"    column="platform_code"    />
+        <result property="systemCode"    column="system_code"    />
+        <result property="moduleCode"    column="module_code"    />
+        <result property="templateTypeCode"    column="template_type_code"    />
+        <result property="templateName"    column="template_name"    />
+        <result property="uploadFileId"    column="upload_file_id"    />
+        <result property="originalFileName"    column="original_file_name"    />
+        <result property="fileSize"    column="file_size"    />
+        <result property="fileType"    column="file_type"    />
+        <result property="lang"    column="lang"    />
+        <result property="tag"    column="tag"    />
+        <result property="remark"    column="remark"    />
+        <result property="createBy"    column="create_by"    />
+        <result property="createTime"    column="create_time"    />
+        <result property="updateBy"    column="update_by"    />
+        <result property="updateTime"    column="update_time"    />
+    </resultMap>
+
+    <sql id="getTemplateCenterVo">
+        select template_id, platform_code, system_code, module_code, template_type_code, template_name, upload_file_id, original_file_name, file_size, file_type, lang, tag, remark, create_by, create_time, update_by, update_time from template_center
+    </sql>
+
+    <select id="getTemplateCenterList" parameterType="TemplateCenter" resultMap="TemplateCenterResult">
+        <include refid="getTemplateCenterVo"/>
+        <where>  
+            <if test="platformCode != null  and platformCode != ''"> and platform_code = #{platformCode}</if>
+            <if test="systemCode != null  and systemCode != ''"> and system_code = #{systemCode}</if>
+            <if test="moduleCode != null  and moduleCode != ''"> and module_code = #{moduleCode}</if>
+            <if test="templateTypeCode != null  and templateTypeCode != ''"> and template_type_code = #{templateTypeCode}</if>
+            <if test="templateName != null  and templateName != ''"> and template_name like concat('%', #{templateName}, '%')</if>
+            <if test="uploadFileId != null  and uploadFileId != ''"> and upload_file_id = #{uploadFileId}</if>
+            <if test="originalFileName != null  and originalFileName != ''"> and original_file_name like concat('%', #{originalFileName}, '%')</if>
+            <if test="fileSize != null "> and file_size = #{fileSize}</if>
+            <if test="fileType != null  and fileType != ''"> and file_type = #{fileType}</if>
+            <if test="lang != null  and lang != ''"> and lang = #{lang}</if>
+            <if test="tag != null  and tag != ''"> and tag = #{tag}</if>
+        </where>
+    </select>
+
+    <select id="getTemplateCenterListByTemplateIds" resultMap="TemplateCenterResult">
+        <include refid="getTemplateCenterVo"/>
+        where template_id in
+        <foreach item="templateId" collection="list" open="(" separator="," close=")">
+            #{templateId}
+        </foreach>
+    </select>
+    
+    <select id="getTemplateCenterByTemplateId" parameterType="Long" resultMap="TemplateCenterResult">
+        <include refid="getTemplateCenterVo"/>
+        where template_id = #{templateId}
+    </select>
+        
+    <insert id="insertTemplateCenter" parameterType="TemplateCenter" useGeneratedKeys="true" keyProperty="templateId">
+        insert into template_center
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="platformCode != null and platformCode != ''">platform_code,</if>
+            <if test="systemCode != null and systemCode != ''">system_code,</if>
+            <if test="moduleCode != null and moduleCode != ''">module_code,</if>
+            <if test="templateTypeCode != null and templateTypeCode != ''">template_type_code,</if>
+            <if test="templateName != null and templateName != ''">template_name,</if>
+            <if test="uploadFileId != null and uploadFileId != ''">upload_file_id,</if>
+            <if test="originalFileName != null and originalFileName != ''">original_file_name,</if>
+            <if test="fileSize != null">file_size,</if>
+            <if test="fileType != null">file_type,</if>
+            <if test="lang != null and lang != ''">lang,</if>
+            <if test="tag != null">tag,</if>
+            <if test="remark != null">remark,</if>
+            <if test="createBy != null">create_by,</if>
+            <if test="createTime != null">create_time,</if>
+            <if test="updateBy != null">update_by,</if>
+            <if test="updateTime != null">update_time,</if>
+         </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="platformCode != null and platformCode != ''">#{platformCode},</if>
+            <if test="systemCode != null and systemCode != ''">#{systemCode},</if>
+            <if test="moduleCode != null and moduleCode != ''">#{moduleCode},</if>
+            <if test="templateTypeCode != null and templateTypeCode != ''">#{templateTypeCode},</if>
+            <if test="templateName != null and templateName != ''">#{templateName},</if>
+            <if test="uploadFileId != null and uploadFileId != ''">#{uploadFileId},</if>
+            <if test="originalFileName != null and originalFileName != ''">#{originalFileName},</if>
+            <if test="fileSize != null">#{fileSize},</if>
+            <if test="fileType != null">#{fileType},</if>
+            <if test="lang != null and lang != ''">#{lang},</if>
+            <if test="tag != null">#{tag},</if>
+            <if test="remark != null">#{remark},</if>
+            <if test="createBy != null">#{createBy},</if>
+            <if test="createTime != null">#{createTime},</if>
+            <if test="updateBy != null">#{updateBy},</if>
+            <if test="updateTime != null">#{updateTime},</if>
+         </trim>
+    </insert>
+
+    <update id="updateTemplateCenter" parameterType="TemplateCenter">
+        update template_center
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="platformCode != null and platformCode != ''">platform_code = #{platformCode},</if>
+            <if test="systemCode != null and systemCode != ''">system_code = #{systemCode},</if>
+            <if test="moduleCode != null and moduleCode != ''">module_code = #{moduleCode},</if>
+            <if test="templateTypeCode != null and templateTypeCode != ''">template_type_code = #{templateTypeCode},</if>
+            <if test="templateName != null and templateName != ''">template_name = #{templateName},</if>
+            <if test="uploadFileId != null and uploadFileId != ''">upload_file_id = #{uploadFileId},</if>
+            <if test="originalFileName != null and originalFileName != ''">original_file_name = #{originalFileName},</if>
+            <if test="fileSize != null">file_size = #{fileSize},</if>
+            <if test="fileType != null">file_type = #{fileType},</if>
+            <if test="lang != null and lang != ''">lang = #{lang},</if>
+            <if test="tag != null">tag = #{tag},</if>
+            <if test="remark != null">remark = #{remark},</if>
+            <if test="createBy != null">create_by = #{createBy},</if>
+            <if test="createTime != null">create_time = #{createTime},</if>
+            <if test="updateBy != null">update_by = #{updateBy},</if>
+            <if test="updateTime != null">update_time = #{updateTime},</if>
+        </trim>
+        where template_id = #{templateId}
+    </update>
+
+    <delete id="deleteTemplateCenterByTemplateId" parameterType="Long">
+        delete from template_center where template_id = #{templateId}
+    </delete>
+
+    <delete id="deleteTemplateCenterByTemplateIds" parameterType="String">
+        delete from template_center where template_id in 
+        <foreach item="templateId" collection="array" open="(" separator="," close=")">
+            #{templateId}
+        </foreach>
+    </delete>
+
+    <update id="updateByUploadFileId" parameterType="TemplateCenter">
+        update template_center
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="uploadFileId != null">upload_file_id = #{uploadFileId},</if>
+            <if test="originalFileName != null">original_file_name = #{originalFileName},</if>
+            <if test="fileSize != null">file_size = #{fileSize},</if>
+            <if test="fileType != null">file_type = #{fileType},</if>
+            <if test="updateBy != null">update_by = #{updateBy},</if>
+            <if test="updateTime != null">update_time = #{updateTime},</if>
+        </trim>
+        where template_id = #{templateId}
+    </update>
+</mapper>

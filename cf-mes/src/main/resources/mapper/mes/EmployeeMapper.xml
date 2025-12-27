@@ -1,0 +1,183 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.cf.mes.mapper.EmployeeMapper">
+
+    <resultMap type="com.cf.mes.domain.Employee" id="EmployeeResult">
+        <result property="employeeId" column="employee_id"/>
+        <result property="employeeCode" column="employee_code"/>
+        <result property="employeeName" column="employee_name"/>
+        <result property="cardNo" column="card_no"/>
+        <result property="avatar" column="avatar"/>
+        <result property="groupId" column="group_id"/>
+        <result property="postId" column="post_id"/>
+        <result property="phone" column="phone"/>
+        <result property="email" column="email"/>
+        <result property="jobPositionRank" column="job_position_rank"/>
+        <result property="jobPositionResponsibility" column="job_position_responsibility"/>
+        <result property="status" column="status"/>
+        <result property="birthday" column="birthday"/>
+        <result property="sex" column="sex"/>
+        <result property="remark" column="remark"/>
+        <result property="createBy" column="create_by"/>
+        <result property="createTime" column="create_time"/>
+        <result property="updateBy" column="update_by"/>
+        <result property="updateTime" column="update_time"/>
+    </resultMap>
+
+    <sql id="getEmployeeSql">
+        select employee_id, employee_code, employee_name,card_no, avatar, group_id, post_id, phone, email,
+        job_position_rank, job_position_responsibility, status, birthday, sex, remark, create_by, create_time, update_by, update_time
+        from employee
+    </sql>
+
+    <select id="getEmployeeList" parameterType="com.cf.mes.domain.Employee" resultMap="EmployeeResult">
+        <include refid="getEmployeeSql"/>
+        <where>
+            <if test="employeeCode != null  and employeeCode != ''">and employee_code like concat('%', #{employeeCode},
+                '%')
+            </if>
+            <if test="employeeName != null  and employeeName != ''">and (employee_name like concat('%', #{employeeName},
+                '%') or employee_id in (select record_id from sys_lang_info where table_name='employee' and
+                column_name='employee_name' and value like concat('%', #{employeeName}, '%')))
+            </if>
+            <if test="cardNo != null  and cardNo != ''">and card_no like concat('%', #{cardNo}, '%')</if>
+            <if test="groupId != null  and groupId != ''">and group_id = #{groupId}</if>
+            <if test="postId != null  and postId != ''">and post_id = #{postId}</if>
+            <if test="phone != null  and phone != ''">and phone like concat('%', #{phone}, '%')</if>
+            <if test="email != null  and email != ''">and email like concat('%', #{email}, '%')</if>
+            <if test="jobPositionRank != null  and jobPositionRank != ''">and like concat('%', #{jobPositionRank},
+                '%')
+            </if>
+            <if test="jobPositionResponsibility != null  and jobPositionResponsibility != ''">and
+                job_position_responsibility like concat('%', #{jobPositionResponsibility}, '%')
+            </if>
+            <if test="status != null  and status != ''">and status = #{status}</if>
+            <if test="remark != null  and remark != ''">and remark like concat('%', #{remark}, '%')</if>
+        </where>
+    </select>
+
+    <select id="getEmployeeById" parameterType="Long" resultMap="EmployeeResult">
+        <include refid="getEmployeeSql"/>
+        where employee_id = #{employeeId}
+    </select>
+
+    <select id="getEmployeeByIds"  resultMap="EmployeeResult">
+        <include refid="getEmployeeSql"/>
+        where employee_id in
+        <foreach item="employeeId" collection="array" open="(" separator="," close=")">
+            #{employeeId}
+        </foreach>
+    </select>
+
+    <select id="getEmployeeListByIds" resultMap="EmployeeResult">
+        <include refid="getEmployeeSql"/>
+        where employee_id in
+        <foreach item="employeeId" collection="list" open="(" separator="," close=")">
+            #{employeeId}
+        </foreach>
+    </select>
+
+    <select id="getEmployeeByCode" parameterType="String" resultMap="EmployeeResult">
+        <include refid="getEmployeeSql"/>
+        where employee_code = #{employeeCode}
+    </select>
+    <select id="getEmployeeByCardNo" parameterType="String" resultMap="EmployeeResult">
+        <include refid="getEmployeeSql"/>
+        where card_no = #{cardNo} and status = 'Y'
+    </select>
+
+    <insert id="insertEmployee" parameterType="com.cf.mes.domain.Employee" useGeneratedKeys="true"
+            keyProperty="employeeId">
+        insert into employee
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="employeeCode != null and employeeCode != ''">employee_code,</if>
+            <if test="employeeName != null">employee_name,</if>
+            <if test="cardNo != null and cardNo != ''">card_no,</if>
+            <if test="avatar != null ">avatar,</if>
+            <if test="groupId != null">group_id,</if>
+            <if test="postId != null">post_id,</if>
+            <if test="phone != null">phone,</if>
+            <if test="email != null">email,</if>
+            <if test="jobPositionRank != null">job_position_rank,</if>
+            <if test="jobPositionResponsibility != null">job_position_responsibility,</if>
+            <if test="status != null">status,</if>
+            <if test="birthday != null">birthday,</if>
+            <if test="sex != null and sex != ''">sex,</if>
+            <if test="remark != null">remark,</if>
+            <if test="createBy != null">create_by,</if>
+            <if test="createTime != null">create_time,</if>
+            <if test="updateBy != null">update_by,</if>
+            <if test="updateTime != null">update_time,</if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="employeeCode != null and employeeCode != ''">#{employeeCode},</if>
+            <if test="employeeName != null">#{employeeName},</if>
+            <if test="cardNo != null and cardNo != ''">#{cardNo},</if>
+            <if test="avatar != null ">#{avatar},</if>
+            <if test="groupId != null">#{groupId},</if>
+            <if test="postId != null">#{postId},</if>
+            <if test="phone != null">#{phone},</if>
+            <if test="email != null">#{email},</if>
+            <if test="jobPositionRank != null">#{jobPositionRank},</if>
+            <if test="jobPositionResponsibility != null">#{jobPositionResponsibility},</if>
+            <if test="status != null">#{status},</if>
+            <if test="birthday != null">#{birthday},</if>
+            <if test="sex != null and sex != ''">#{sex},</if>
+            <if test="remark != null">#{remark},</if>
+            <if test="createBy != null">#{createBy},</if>
+            <if test="createTime != null">#{createTime},</if>
+            <if test="updateBy != null">#{updateBy},</if>
+            <if test="updateTime != null">#{updateTime},</if>
+        </trim>
+    </insert>
+
+    <update id="updateEmployee" parameterType="com.cf.mes.domain.Employee">
+        update employee
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="employeeName != null">employee_name = #{employeeName},</if>
+            <if test="cardNo != null and cardNo != ''">card_no = #{cardNo} ,</if>
+            <if test="avatar != null ">avatar = #{avatar},</if>
+            <if test="groupId != null">group_id = #{groupId},</if>
+            <if test="postId != null">post_id = #{postId},</if>
+            <if test="phone != null">phone = #{phone},</if>
+            <if test="email != null">email = #{email},</if>
+            <if test="jobPositionRank != null">job_position_rank = #{jobPositionRank},</if>
+            <if test="jobPositionResponsibility != null">job_position_responsibility = #{jobPositionResponsibility},
+            </if>
+            <if test="status != null">status = #{status},</if>
+            <if test="birthday != null">birthday = #{birthday},</if>
+            <if test="sex != null and sex != ''">sex = #{sex},</if>
+            <if test="remark != null">remark = #{remark},</if>
+            <if test="createBy != null">create_by = #{createBy},</if>
+            <if test="createTime != null">create_time = #{createTime},</if>
+            <if test="updateBy != null">update_by = #{updateBy},</if>
+            <if test="updateTime != null">update_time = #{updateTime},</if>
+        </trim>
+        where employee_id = #{employeeId}
+    </update>
+
+    <update id="updateEmployeeByAvatar" parameterType="String">
+        update employee set avatar = "" where avatar = #{avatar}
+    </update>
+
+    <delete id="deleteEmployeeById" parameterType="Long">
+        delete from employee where employee_id = #{employeeId}
+    </delete>
+
+    <delete id="deleteEmployeeByIds" parameterType="String">
+        delete from employee where employee_id in
+        <foreach item="employeeId" collection="array" open="(" separator="," close=")">
+            #{employeeId}
+        </foreach>
+    </delete>
+
+    <select id="getBirthdayEmployeeList" resultMap="EmployeeResult">
+        <include refid="getEmployeeSql"/>
+        where
+        birthday IS NOT NULL
+        AND MONTH ( birthday ) = MONTH (#{birthday})
+        AND DAY ( birthday ) = DAY (#{birthday})
+    </select>
+</mapper>

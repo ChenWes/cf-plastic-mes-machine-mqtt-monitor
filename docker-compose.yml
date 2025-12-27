@@ -1,0 +1,80 @@
+version: '3'
+
+services:
+  cf-plastic-mes-machine-mqtt-monitor:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8081:8081"
+      - "9999:9999"
+    expose:
+      - 8081
+      - 9999
+    #    deploy:
+    #      resources:
+    #        limits:
+    #          cpus: '0.25'
+    #          memory: 250M
+    #        reservations:
+    #          memory: 250M
+    environment:
+      MYSQL_URL: jdbc:mysql://10.8.0.13:3306/cfmes?useUnicode=true&characterEncoding=utf8&zeroDateTimeBehavior=convertToNull&useSSL=true&serverTimezone=GMT%2B8
+      MYSQL_USERNAME: root
+      MYSQL_PASSWORD: 123456
+      REDIS_HOST: 10.8.0.13
+      REDIS_PORT: 6379
+      # REDIS_PASSWORD:
+      RABBITMQ_HOST: 10.8.0.13
+      RABBITMQ_PORT: 5672
+      RABBITMQ_VIRTUAL_HOST: /
+      RABBITMQ_USERNAME: admin
+      RABBITMQ_PASSWORD: admin123
+      # keycloak配置
+      KEYCLOAK_AUTH_SERVER_URL: https://10.8.0.2:8443
+      KEYCLOAK_REALM: CF
+      KEYCLOAK_RESOURCE: plastic-mes-verify-token
+      KEYCLOAK_SSL_REQUIRED: NONE
+      KEYCLOAK_TOKEN_REQUIRE_SECRET: CfELat5F6FBWofKCVCVuRKWhmrbj6DnB
+      KEYCLOAK_TOKEN_REQUIRE_RESOURCE: plastic-mes-generate-token
+      WEBSOCKET_URL: ws://10.8.0.13:12345/ws?channel=master&lang=en_US
+      MINIO_ENDPOINT: http://10.8.0.13:9000
+      MINIO_ACCESSKEY: minio
+      MINIO_SECRETKEY: minio123
+      SKYWALKING_AGENT_LAUNCH_FLAG: "N"
+      SKYWALKING_AGENT_SERVICE_NAME: MESAPI
+      SKYWALKING_COLLECTOR_BACKEND_SERVICE: 10.8.0.13:11800
+      #时区配置
+      USER_TIMEZONE: GMT+08
+      # XXL-JOB
+      XXL_JOB_ADMIN_ADDRESSES: http://10.8.0.13:8092/xxl-job-admin
+      # XXL_JOB_EXECUTOR_ADDRESS:
+      XXL_JOB_EXECUTOR_IP: 10.8.0.11
+      XXL_JOB_EXECUTOR_PORT: 9999
+      # 证书配置
+      TRUST_STORE: /app/ssl/server.jks
+      TRUST_STORE_PASSWORD: admin123
+
+      JAVA_OPTS: >-
+        -Xms2048m -Xmx2048m
+        -XX:MetaspaceSize=128m -XX:MaxMetaspaceSize=256m
+        -XX:+UseG1GC -XX:MaxGCPauseMillis=150
+        -XX:InitiatingHeapOccupancyPercent=45
+        -XX:+ParallelRefProcEnabled
+        -XX:+DisableExplicitGC
+        -XX:ParallelGCThreads=4
+        -XX:ConcGCThreads=2
+        -XX:+PrintGCDetails
+        -XX:+PrintGCDateStamps
+        -XX:+PrintGCTimeStamps
+        -XX:+PrintAdaptiveSizePolicy
+        -XX:+PrintTenuringDistribution
+        -XX:+PrintReferenceGC
+        -Xloggc:/tmp/gc-%t.log
+        -XX:+UseGCLogFileRotation -XX:NumberOfGCLogFiles=5 -XX:GCLogFileSize=20M
+        -XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpPath=/tmp/heapdump.hprof
+        -XX:+UseContainerSupport
+        -Djava.security.egd=file:/dev/./urandom
+
+    volumes:
+      - E:/github/cfmm/hotfix/cf-plastic-mes-machine-mqtt-monitor/server.jks:/app/ssl/server.jks

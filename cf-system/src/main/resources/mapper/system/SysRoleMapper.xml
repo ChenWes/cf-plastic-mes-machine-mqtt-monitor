@@ -1,0 +1,115 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+		PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+		"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.cf.system.mapper.SysRoleMapper">
+
+	<resultMap type="SysRole" id="SysRoleResult">
+		<id     property="roleId"             column="role_id"               />
+		<result property="roleCode"           column="role_code"             />
+		<result property="roleName"            column="role_name"             />
+		<result property="status"             column="status"                />
+		<result property="remark"             column="remark"                />
+		<result property="createBy"           column="create_by"             />
+		<result property="createTime"         column="create_time"           />
+		<result property="updateBy"           column="update_by"             />
+		<result property="updateTime"         column="update_time"           />
+	</resultMap>
+
+	<sql id="getRoleSql">
+		SELECT `sys_role`.`role_id`,
+		`sys_role`.`role_code`,
+		`sys_role`.`role_name`,
+		`sys_role`.`status`,
+		`sys_role`.`remark`,
+		`sys_role`.`create_by`,
+		`sys_role`.`create_time`,
+		`sys_role`.`update_by`,
+		`sys_role`.`update_time`
+		FROM  `sys_role`
+
+	</sql>
+
+	<select id="getRoleList" parameterType="SysRole" resultMap="SysRoleResult">
+		<include refid="getRoleSql"/>
+		<where>
+			<if test="roleCode != null and roleCode != ''">
+				AND role_code like concat('%', #{roleCode}, '%')
+			</if>
+			<if test="roleName != null and roleName != ''">
+				AND (role_name like concat('%', #{roleName}, '%') or role_id in (select record_id from sys_lang_info where table_name='sys_role' and column_name='role_name' and value like concat('%', #{roleName}, '%')))
+			</if>
+			<if test="status != null and status != ''">
+				AND status = #{status}
+			</if>
+		</where>
+
+	</select>
+
+	<select id="getRolesByUserId" parameterType="Long" resultMap="SysRoleResult">
+		<include refid="getRoleSql"/>
+		where role_id in ( select role_id from sys_user_role where user_id=#{userId}) AND status = 'Y'
+	</select>
+
+	<select id="getRoleById" parameterType="Long"  resultMap="SysRoleResult">
+		<include refid="getRoleSql"/>
+		where role_id=#{roleId}
+	</select>
+
+	<select id="getRoleByCode"  parameterType="String" resultMap="SysRoleResult">
+		<include refid="getRoleSql"/>
+		where role_code=#{roleCode}
+	</select>
+
+	<select id="getRolesByUserCode" parameterType="String" resultMap="SysRoleResult">
+		<include refid="getRoleSql"/>
+		where role_id in ( select role_id from sys_user where user_code=#{userCode})
+	</select>
+
+
+
+	<insert id="insertRole" parameterType="SysRole" useGeneratedKeys="true" keyProperty="roleId">
+		insert into sys_role(
+		<if test="roleId != null and roleId != 0">role_id,</if>
+		<if test="roleCode != null and roleCode != ''">role_code,</if>
+		<if test="roleName != null and roleName != ''">role_name,</if>
+		<if test="status != null and status != ''">status,</if>
+		<if test="remark != null and remark != ''">remark,</if>
+		<if test="createBy != null and createBy != ''">create_by,</if>
+		<if test="createTime != null">create_time</if>
+		)values(
+		<if test="roleId != null and roleId != 0">#{roleId},</if>
+		<if test="roleCode != null and roleCode != ''">#{roleCode},</if>
+		<if test="roleName != null and roleName != ''">#{roleName},</if>
+		<if test="status != null and status != ''">#{status},</if>
+		<if test="remark != null and remark != ''">#{remark},</if>
+		<if test="createBy != null and createBy != ''">#{createBy},</if>
+		<if test="createTime != null">#{createTime}</if>
+		)
+	</insert>
+
+	<update id="updateRole" parameterType="SysRole">
+		update sys_role
+		<set>
+			<if test="roleName != null and roleName != ''">role_name = #{roleName},</if>
+			<if test="status != null and status != ''">status = #{status},</if>
+			<if test="remark != null">remark = #{remark},</if>
+			<if test="updateBy != null and updateBy != ''">update_by = #{updateBy},</if>
+			<if test="updateTime != null">update_time = #{updateTime}</if>
+		</set>
+		where role_id = #{roleId}
+	</update>
+
+
+	<delete id="deleteRoleById" parameterType="Long">
+		delete from sys_role where role_id = #{roleId}
+	</delete>
+
+	<delete id="deleteRoleByIds" parameterType="Long">
+		delete from sys_role where  role_id in
+		<foreach collection="array" item="roleId" open="(" separator="," close=")">
+			#{roleId}
+		</foreach>
+	</delete>
+
+</mapper> 

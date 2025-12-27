@@ -1,0 +1,234 @@
+# 项目相关配置
+cf:
+  # 名称
+  name: CuiFeng
+  # 版本
+  version: 1.0.0
+  # 版权年份
+  copyrightYear: 2021
+
+  # 文件路径 示例（ Windows配置D:/cf/uploadPath，Linux配置 /home/cf/uploadPath）
+  profile: C:/cf/uploadPath
+  # 获取ip地址开关
+  addressEnabled: false
+  # 验证码类型 math 数组计算 char 字符验证
+  captchaType: math
+
+# 连接websocket，广播消息
+webSocketUri: ws://172.17.130.169:12345/ws?channel=master&lang=en_US
+
+# 开发环境配置
+server:
+  # 服务器的HTTP端口，默认为8080
+  port: 8081
+  servlet:
+    # 应用的访问路径
+    context-path: /
+  tomcat:
+    # tomcat的URI编码
+    uri-encoding: UTF-8
+    # tomcat最大线程数，默认为200
+    max-threads: 800
+    # Tomcat启动初始化的线程数，默认值25
+    min-spare-threads: 30
+
+# 日志配置
+logging:
+  level:
+    com.cf: debug
+    org.springframework: warn
+
+# Spring配置
+spring:
+  # 资源信息
+  messages:
+    # 国际化资源文件路径
+    basename: i18n/messages
+    encoding: UTF-8
+  # 文件上传
+  servlet:
+     multipart:
+       # 单个文件大小
+       max-file-size:  10MB
+       # 设置总上传的文件大小
+       max-request-size:  20MB
+  # 服务模块
+  devtools:
+    restart:
+      # 热部署开关
+      enabled: true
+  # redis 配置
+  redis:
+    # 地址
+    host: localhost
+    # 端口，默认为6379
+    port: 6379
+    # 密码
+    password: 
+    # 连接超时时间
+    timeout: 10s
+    lettuce:
+      pool:
+        # 连接池中的最小空闲连接
+        min-idle: 0
+        # 连接池中的最大空闲连接
+        max-idle: 8
+        # 连接池的最大数据库连接数
+        max-active: 8
+        # #连接池最大阻塞等待时间（使用负值表示没有限制）
+        max-wait: -1ms
+
+  #rabbitmq配置信息
+  rabbitmq:
+    host: localhost
+    port: 5672
+    username: luorog
+    password: luorog
+    #virtual-host默认/可以不写
+    virtual-host: /
+    #消息发送确认
+    publisher-confirms: true
+    #通过实现ReturnCallback接口，如果消息从交换器发送到对应队列失败时触发（比如根据发送消息时指定的routingKey找不到队列时会触发）
+    publisher-returns: true
+    listener:
+      # 消息接收确认模式
+      #默认是simple
+      simple:
+        acknowledge-mode: MANUAL
+      direct:
+        acknowledge-mode: MANUAL
+
+# token配置
+token:
+    # 令牌自定义标识
+    header: Authorization
+    # 令牌密钥
+    secret:
+    # 令牌有效期（默认30分钟）
+    expireTime: 30
+  
+
+
+# Swagger配置
+swagger:
+  # 是否开启swagger
+  enabled: true
+  # 请求前缀
+  pathMapping:
+
+keycloak:
+  realm: MES
+  auth-server-url: http://localhost:8080/auth/
+  resource: spring-boot-demo
+  ssl-required: external
+mykeycloak:
+  root-user: admin
+  root-password: admin
+
+tokenRequire:
+  resource: mes-machine-client
+  secret: ebdcccdc-e7f2-4a8e-9eee-e39dfd51bdcf
+
+minio:
+  endpoint: http://172.17.130.169:9000
+  accessKey: minio
+  secretKey: minio123
+
+jetcache:
+  statIntervalMinutes: 15
+  areaInCacheName: false
+  local:
+    default:
+      type: linkedhashmap
+      keyConvertor: fastjson
+  remote:
+    default:
+      type: redis
+      keyConvertor: fastjson
+      broadcastChannel: mes-api
+      valueEncoder: java
+      valueDecoder: java
+      poolConfig:
+        minIdle: 5
+        maxIdle: 20
+        maxTotal: 50
+      host: ${spring.redis.host}
+      port: ${spring.redis.port}
+
+redisson:
+  json: |-
+    {
+      "singleServerConfig":{
+        "idleConnectionTimeout": 10000,
+        "pingTimeout": 1000,
+        "connectTimeout": 10000,
+        "timeout": 3000,
+        "retryAttempts": 3,
+        "retryInterval": 1500,
+        "reconnectionTimeout": 3000,
+        "failedAttempts": 3,
+        "password": null,
+        "subscriptionsPerConnection": 5,
+        "clientName": null,
+        "address": "redis://172.17.130.169:6379",
+        "subscriptionConnectionMinimumIdleSize": 1,
+        "subscriptionConnectionPoolSize": 50,
+        "connectionMinimumIdleSize": 32,
+        "connectionPoolSize": 64,
+        "database": 1,
+        "dnsMonitoringInterval": 5000
+      },
+      "threads": 0,
+      "nettyThreads": 0,
+      "codec":null
+    }
+
+mes:
+  report:
+    machine-usage-rate-settlement:
+      fields:
+        - field: production
+          name: 生產時間
+          status: produce
+          desc: 生產時間=使用時間
+          i18n:
+            en_US: Production Time
+            th_TH: เวลาในการผลิต
+            zh_CN: 生产时间
+            zh_TW: 生產時間
+        - field: qualityCtrl
+          name: QC測試時間
+          status: waitEmployee,qcConfirm
+          desc: QC測試時間=待人手+QC確認時間
+          i18n:
+            en_US: QC Test Time
+            th_TH: เวลาการทดสอบ QC
+            zh_CN: QC测试时间
+            zh_TW: QC測試時間
+        - field: waitMaterial
+          name: 待料時間
+          status: waitMaterial,Other
+          desc: 待料時間=上模後待料時間+其他時間
+          i18n:
+            en_US: time of wait for materials
+            th_TH: เวลารอ
+            zh_CN: 待料时间
+            zh_TW: 待料時間
+        - field: upDownMold
+          name: 上落模時間
+          status: transportMould,,debugMachine
+          desc: 上落模時間=轉模+轉顏色+調機
+          i18n:
+            en_US: Up and down mold time
+            th_TH: เวลาแม่พิมพ์บนและล่าง
+            zh_CN: 上落模时间
+            zh_TW: 上落模時間
+        - field: others
+          name: 其他時間
+          status: exclude above
+          desc: 其他時間=休假時間+其他類似時間+待包材+待工程確認時間
+          i18n:
+            en_US: others
+            th_TH: เวลาอื่น ๆ
+            zh_CN: 其他时间
+            zh_TW: 其他時間

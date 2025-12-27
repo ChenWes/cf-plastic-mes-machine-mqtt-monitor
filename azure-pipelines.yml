@@ -1,0 +1,37 @@
+# Maven
+# Build your Java project and run tests with Apache Maven.
+# Add steps that analyze code, save build artifacts, deploy, and more:
+# https://docs.microsoft.com/azure/devops/pipelines/languages/java
+
+trigger:
+- development
+
+pool:
+  vmImage: ubuntu-latest
+
+
+variables:
+   imageName: '$(dockerRegistry)/cf-plastic-mes-machine-mqtt-monitor-new:$(build.BuildNumber)'
+
+steps:
+- task: Maven@3
+  inputs:
+    mavenPomFile: 'pom.xml'
+    mavenOptions: '-Xmx3072m'
+    javaHomeOption: 'JDKVersion'
+    jdkVersionOption: '1.8'
+    jdkArchitectureOption: 'x64'
+    publishJUnitResults: true
+    testResultsFiles: '**/surefire-reports/TEST-*.xml'
+    goals: 'package'
+    
+# 编译镜像
+- script: |
+    docker build -t $(imageName) .
+  displayName: 'build image' 
+  
+# 将镜像推送至DockerHub
+- script: |
+    docker login --username=$(dockerUsername) registry.cn-hangzhou.aliyuncs.com -p $(dockerPassword)
+    docker push $(imageName)
+  displayName: 'push image'  

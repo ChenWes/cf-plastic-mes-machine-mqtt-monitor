@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.cf.system.mapper.UploadFileMapper">
+
+    <resultMap type="com.cf.common.core.domain.entity.UploadFile" id="UploadFileResult">
+        <result property="uploadFileId" column="upload_file_id"/>
+        <result property="bucketsName" column="buckets_name"/>
+        <result property="fileName" column="file_name"/>
+        <result property="originalFileName" column="original_file_name"/>
+        <result property="fileSize" column="file_size"/>
+        <result property="fileType" column="file_type"/>
+        <result property="status" column="status"/>
+        <result property="remark" column="remark"/>
+        <result property="createBy" column="create_by"/>
+        <result property="createTime" column="create_time"/>
+        <result property="updateBy" column="update_by"/>
+        <result property="updateTime" column="update_time"/>
+    </resultMap>
+
+    <sql id="getUploadFileSql">
+        select upload_file_id, buckets_name, file_name, original_file_name, file_size, file_type, status, remark, create_by, create_time,
+        update_by, update_time from upload_file
+    </sql>
+
+
+    <select id="getUploadFileById" parameterType="String" resultMap="UploadFileResult">
+        <include refid="getUploadFileSql"/>
+        where upload_file_id = #{uploadFileId}
+    </select>
+
+
+    <insert id="insertUploadFile" parameterType="com.cf.common.core.domain.entity.UploadFile">
+        insert into upload_file
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="uploadFileId != null and uploadFileId != ''">upload_file_id,</if>
+            <if test="bucketsName != null and bucketsName != ''">buckets_name,</if>
+            <if test="fileName != null and fileName != ''">file_name,</if>
+            <if test="originalFileName != null">original_file_name,</if>
+            <if test="fileSize != null">file_size,</if>
+            <if test="fileType != null">file_type,</if>
+            <if test="status != null">status,</if>
+            <if test="remark != null">remark,</if>
+            <if test="createBy != null">create_by,</if>
+            <if test="createTime != null">create_time,</if>
+            <if test="updateBy != null">update_by,</if>
+            <if test="updateTime != null">update_time,</if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="uploadFileId != null and uploadFileId != ''">#{uploadFileId},</if>
+            <if test="bucketsName != null and bucketsName != ''">#{bucketsName},</if>
+            <if test="fileName != null and fileName != ''">#{fileName},</if>
+            <if test="originalFileName != null">#{originalFileName},</if>
+            <if test="fileSize != null">#{fileSize},</if>
+            <if test="fileType != null">#{fileType},</if>
+            <if test="status != null">#{status},</if>
+            <if test="remark != null">#{remark},</if>
+            <if test="createBy != null">#{createBy},</if>
+            <if test="createTime != null">#{createTime},</if>
+            <if test="updateBy != null">#{updateBy},</if>
+            <if test="updateTime != null">#{updateTime},</if>
+        </trim>
+    </insert>
+
+    <update id="updateUploadFile" parameterType="com.cf.common.core.domain.entity.UploadFile">
+        update upload_file
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="bucketsName != null">buckets_name = #{bucketsName},</if>
+            <if test="fileName != null">file_name = #{fileName},</if>
+            <if test="originalFileName != null">original_file_name = #{originalFileName},</if>
+            <if test="fileSize != null">file_size = #{fileSize},</if>
+            <if test="fileType != null">file_type = #{fileType},</if>
+            <if test="status != null">status = #{status},</if>
+            <if test="remark != null">remark = #{remark},</if>
+            <if test="createBy != null">create_by = #{createBy},</if>
+            <if test="createTime != null">create_time = #{createTime},</if>
+            <if test="updateBy != null">update_by = #{updateBy},</if>
+            <if test="updateTime != null">update_time = #{updateTime},</if>
+        </trim>
+        where upload_file_id = #{uploadFileId}
+    </update>
+
+
+    <delete id="deleteUploadFileById" parameterType="String">
+        delete from upload_file where upload_file_id =#{uploadFileId}
+    </delete>
+
+    <select id="getUploadFileListByIds" resultMap="UploadFileResult">
+        <include refid="getUploadFileSql"/>
+        where upload_file_id in
+        <foreach item="item" collection="list" open="(" separator="," close=")">
+            #{item}
+        </foreach>
+    </select>
+
+</mapper>

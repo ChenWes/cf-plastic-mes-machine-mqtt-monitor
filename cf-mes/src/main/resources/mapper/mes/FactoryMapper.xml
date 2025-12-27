@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.cf.mes.mapper.FactoryMapper">
+
+    <resultMap type="Factory" id="FactoryResult">
+        <result property="factoryId"    column="factory_id"    />
+        <result property="factoryCode"    column="factory_code"    />
+        <result property="factoryName"    column="factory_name"    />
+        <result property="status"    column="status"    />
+        <result property="remark"    column="remark"    />
+        <result property="createBy"    column="create_by"    />
+        <result property="createTime"    column="create_time"    />
+        <result property="updateBy"    column="update_by"    />
+        <result property="updateTime"    column="update_time"    />
+    </resultMap>
+
+    <sql id="getFactorySql">
+        select factory_id, factory_code, factory_name, status, remark, create_by, create_time, update_by, update_time from factory
+    </sql>
+
+    <select id="getFactoryList" parameterType="Factory" resultMap="FactoryResult">
+        <include refid="getFactorySql"/>
+        <where>
+            <if test="factoryCode != null  and factoryCode != ''"> and factory_code like concat('%', #{factoryCode}, '%')</if>
+            <if test="factoryName != null  and factoryName != ''">and (factory_name like concat('%', #{factoryName}, '%') or factory_id in (select record_id from sys_lang_info where table_name='factory' and column_name='factory_name' and value like concat('%', #{factoryName}, '%')))</if>
+            <if test="status != null  and status != ''"> and status = #{status}</if>
+            <if test="remark != null  and remark != ''"> and remark like concat('%', #{remark}, '%')</if>
+        </where>
+    </select>
+
+    <select id="getFactoryById" parameterType="Long" resultMap="FactoryResult">
+          <include refid="getFactorySql"/>
+        where factory_id = #{factoryId}
+    </select>
+
+    <select id="getFactoryByCode" parameterType="String" resultMap="FactoryResult">
+        <include refid="getFactorySql"/>
+        where factory_code = #{factoryCode}
+    </select>
+
+    <insert id="insertFactory" parameterType="Factory" useGeneratedKeys="true" keyProperty="factoryId">
+        insert into factory
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="factoryCode != null and factoryCode != ''">factory_code,</if>
+            <if test="factoryName != null">factory_name,</if>
+            <if test="status != null">status,</if>
+            <if test="remark != null">remark,</if>
+            <if test="createBy != null">create_by,</if>
+            <if test="createTime != null">create_time,</if>
+            <if test="updateBy != null">update_by,</if>
+            <if test="updateTime != null">update_time,</if>
+         </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="factoryCode != null and factoryCode != ''">#{factoryCode},</if>
+            <if test="factoryName != null">#{factoryName},</if>
+            <if test="status != null">#{status},</if>
+            <if test="remark != null">#{remark},</if>
+            <if test="createBy != null">#{createBy},</if>
+            <if test="createTime != null">#{createTime},</if>
+            <if test="updateBy != null">#{updateBy},</if>
+            <if test="updateTime != null">#{updateTime},</if>
+         </trim>
+    </insert>
+
+    <update id="updateFactory" parameterType="Factory">
+        update factory
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="factoryName != null">factory_name = #{factoryName},</if>
+            <if test="status != null">status = #{status},</if>
+            <if test="remark != null">remark = #{remark},</if>
+            <if test="createBy != null">create_by = #{createBy},</if>
+            <if test="createTime != null">create_time = #{createTime},</if>
+            <if test="updateBy != null">update_by = #{updateBy},</if>
+            <if test="updateTime != null">update_time = #{updateTime},</if>
+        </trim>
+        where factory_id = #{factoryId}
+    </update>
+
+    <delete id="deleteFactoryById" parameterType="Long">
+        delete from factory where factory_id = #{factoryId}
+    </delete>
+
+    <delete id="deleteFactoryByIds" parameterType="String">
+        delete from factory where factory_id in
+        <foreach item="factoryId" collection="array" open="(" separator="," close=")">
+            #{factoryId}
+        </foreach>
+    </delete>
+
+    <select id="getFactoryListByIds" resultMap="FactoryResult">
+        <include refid="getFactorySql"/>
+        where factory_id in
+        <foreach item="factoryId" collection="list" open="(" separator="," close=")">
+            #{factoryId}
+        </foreach>
+    </select>
+</mapper>

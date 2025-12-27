@@ -1,0 +1,246 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.cf.mes.mapper.MachineMapper">
+    <resultMap id="MachineResult" type="com.cf.mes.domain.Machine">
+        <result property="machineId" column="machine_id"/>
+        <result property="workshopId" column="workshop_id"/>
+        <result property="machineCode" column="machine_code"/>
+        <result property="machineName" column="machine_name"/>
+        <result property="machineTypeId" column="machine_type_id"/>
+        <result property="machineBrand" column="machine_brand"/>
+        <result property="machineIp" column="machine_ip"/>
+        <result property="macAddress" column="mac_address"/>
+        <result property="capacity" column="capacity"/>
+        <result property="status" column="status"/>
+        <result property="remark" column="remark"/>
+        <result property="registrationCode" column="registration_code"/>
+        <result property="parameterString" column="parameter_string"/>
+        <result property="createBy" column="create_by"/>
+        <result property="createTime" column="create_time"/>
+        <result property="updateBy" column="update_by"/>
+        <result property="updateTime" column="update_time"/>
+    </resultMap>
+    <sql id="getMachineSql">
+        select machine_id, workshop_id, machine_code, machine_name, machine_type_id, machine_brand, machine_ip, mac_address, capacity, status, remark, registration_code, parameter_string, create_by, create_time, update_by, update_time from `machine`
+    </sql>
+
+    <insert id="insertMachine" parameterType="com.cf.mes.domain.Machine" useGeneratedKeys="true" keyProperty="machineId">
+        insert into `machine`
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="workshopId != null">workshop_id,</if>
+            <if test="machineCode != null and machineCode != ''">machine_code,</if>
+            <if test="machineName != null and machineName != ''">machine_name,</if>
+            <if test="machineTypeId != null">machine_type_id,</if>
+            <if test="machineBrand != null">machine_brand,</if>
+            <if test="machineIp != null">machine_ip,</if>
+            <if test="macAddress != null">mac_address,</if>
+            <if test="capacity != null">capacity,</if>
+            <if test="status != null">status,</if>
+            <if test="createBy != null">create_by,</if>
+            <if test="createTime != null">create_time,</if>
+            <if test="updateBy != null">update_by,</if>
+            <if test="updateTime != null">update_time,</if>
+            <if test="remark != null">remark,</if>
+            <if test="registrationCode != null">registration_code,</if>
+            <if test="parameterString != null">parameter_string,</if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="workshopId != null">#{workshopId},</if>
+            <if test="machineCode != null and machineCode != ''">#{machineCode},</if>
+            <if test="machineName != null and machineName != ''">#{machineName},</if>
+            <if test="machineTypeId != null">#{machineTypeId},</if>
+            <if test="machineBrand != null">#{machineBrand},</if>
+            <if test="machineIp != null">#{machineIp},</if>
+            <if test="macAddress != null">#{macAddress},</if>
+            <if test="capacity != null">#{capacity},</if>
+            <if test="status != null">#{status},</if>
+            <if test="createBy != null">#{createBy},</if>
+            <if test="createTime != null">#{createTime},</if>
+            <if test="updateBy != null">#{updateBy},</if>
+            <if test="updateTime != null">#{updateTime},</if>
+            <if test="remark != null">#{remark},</if>
+            <if test="registrationCode != null">#{registrationCode},</if>
+            <if test="parameterString != null">#{parameterString},</if>
+        </trim>
+    </insert>
+    <update id="updateMachine" parameterType="com.cf.mes.domain.Machine">
+        update `machine`
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="machineName != null">machine_name = #{machineName},</if>
+            <if test="workshopId != null">workshop_id = #{workshopId},</if>
+            <if test="machineTypeId != null">machine_type_id = #{machineTypeId},</if>
+            <if test="machineBrand != null">machine_brand = #{machineBrand},</if>
+            <if test="machineIp != null">machine_ip = #{machineIp},</if>
+            <if test="macAddress != null">mac_address = #{macAddress},</if>
+            <if test="capacity != null">capacity = #{capacity},</if>
+            <if test="status != null">status = #{status},</if>
+            <if test="createBy != null">create_by = #{createBy},</if>
+            <if test="createTime != null">create_time = #{createTime},</if>
+            <if test="updateBy != null">update_by = #{updateBy},</if>
+            <if test="updateTime != null">update_time = #{updateTime},</if>
+            <if test="remark != null">remark = #{remark},</if>
+            <if test="registrationCode != null">registration_code = #{registrationCode},</if>
+            <if test="parameterString != null">parameter_string = #{parameterString},</if>
+        </trim>
+        where machine_id = #{machineId}
+    </update>
+    <update id="registrationMachine" parameterType="com.cf.mes.domain.MachineRegistration">
+        update `machine`
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="machineIp != null">machine_ip = #{machineIp},</if>
+            <if test="macAddress != null">mac_address = #{macAddress},</if>
+        </trim>
+        where machine_id = #{machineId} and registration_code=#{registrationCode}
+    </update>
+    <delete id="deleteMachineById" parameterType="Long">
+        delete from `machine` where machine_id = #{machineId}
+    </delete>
+    <delete id="deleteMachineByIds">
+        delete from `machine` where machine_id in
+        <foreach item="machineId" collection="array" open="(" separator="," close=")">
+            #{machineId}
+        </foreach>
+    </delete>
+
+    <select id="getMachineById" resultMap="MachineResult" parameterType="Long">
+        <include refid="getMachineSql"/>
+        where machine_id = #{machineId}
+    </select>
+
+    <select id="getMachineByIds" resultMap="MachineResult">
+        <include refid="getMachineSql"/>
+        where machine_id in
+        <foreach item="machineId" collection="array" open="(" separator="," close=")">
+            #{machineId}
+        </foreach>
+    </select>
+
+    <select id="getMachineByCode" resultMap="MachineResult" parameterType="String">
+        <include refid="getMachineSql"/>
+        where machine_code = #{machineCode}
+    </select>
+    <select id="getMachineByRegistrationCode" resultMap="MachineResult" parameterType="String">
+        <include refid="getMachineSql"/>
+        where registration_code = #{registrationCode}
+    </select>
+    <select id="getMachineList" resultMap="MachineResult">
+        <include refid="getMachineSql"/>
+        <where>
+            <if test="workshopId != null "> and workshop_id = #{workshopId}</if>
+            <if test="machineCode != null  and machineCode != ''"> and machine_code like concat('%', #{machineCode}, '%')</if>
+            <if test="machineName != null  and machineName != ''"> and (machine_name like concat('%', #{machineCode}, '%') or machine_id in (select record_id from sys_lang_info where table_name='machine' and column_name='machine_name' and value like concat('%', #{machineName}, '%')))</if>
+            <if test="machineTypeId != null "> and machine_type_id = #{machineTypeId}</if>
+            <if test="machineBrand != null  and machineBrand != ''"> and machine_brand like concat('%', #{machineBrand}, '%')</if>
+            <if test="macAddress != null  and macAddress != ''"> and mac_address like concat('%', #{macAddress}, '%')</if>
+            <if test="machineIp != null  and machineIp != ''"> and machine_ip like concat('%', #{machineIp}, '%')</if>
+            <if test="capacity != null  and capacity != ''"> and capacity = #{capacity}</if>
+            <if test="status != null  and status != ''"> and status = #{status}</if>
+            <if test="remark != null  and remark != ''"> and remark like concat('%', #{remark}, '%')</if>
+            <if test="parameterString != null  and parameterString != ''"> and parameter_string like concat('%', #{parameterString}, '%')</if>
+        </where>
+    </select>
+    <select id="getMachineListByFilter" resultMap="MachineResult">
+        <include refid="getMachineSql"/>
+        <where>
+            <if test="processId != null "> and machine_type_id in (SELECT machine_type_id FROM machine_type_process_map WHERE process_id = #{processId} )</if>
+            <if test="workshopId != null "> and workshop_id = #{workshopId}</if>
+            <if test="machineCode != null  and machineCode != ''"> and machine_code like concat('%', #{machineCode}, '%')</if>
+            <if test="machineName != null  and machineName != ''"> and (machine_name like concat('%', #{machineCode}, '%') or machine_id in (select record_id from sys_lang_info where table_name='machine' and column_name='machine_name' and value like concat('%', #{machineName}, '%')))</if>
+            <if test="machineTypeId != null "> and machine_type_id = #{machineTypeId}</if>
+            <if test="machineBrand != null  and machineBrand != ''"> and machine_brand like concat('%', #{machineBrand}, '%')</if>
+            <if test="macAddress != null  and macAddress != ''"> and mac_address like concat('%', #{macAddress}, '%')</if>
+            <if test="machineIp != null  and machineIp != ''"> and machine_ip like concat('%', #{machineIp}, '%')</if>
+            <if test="capacity != null  and capacity != ''"> and capacity = #{capacity}</if>
+            <if test="status != null  and status != ''"> and status = #{status}</if>
+            <if test="remark != null  and remark != ''"> and remark like concat('%', #{remark}, '%')</if>
+            <if test="parameterString != null  and parameterString != ''"> and parameter_string like concat('%', #{parameterString}, '%')</if>
+        </where>
+    </select>
+
+    <select id="getRegisterMachineList" resultMap="MachineResult">
+        <include refid="getMachineSql"/>
+        where machine_ip is not null and mac_address is not null
+    </select>
+    <select id="getMachineListByWorkshopIds"  resultMap="MachineResult">
+        <include refid="getMachineSql"/>
+        where workshop_id in
+        <foreach item="workshopId" collection="array" open="(" separator="," close=")">
+            #{workshopId}
+        </foreach>
+    </select>
+    <select id="getMachineListByWorkshopId"  resultMap="MachineResult">
+        <include refid="getMachineSql"/>
+        where workshop_id = #{workshopId}
+    </select>
+    <select id="getMachineListByFactoryId"  resultMap="MachineResult">
+        <include refid="getMachineSql"/>
+        where workshop_id in ( select workshop_id from workshop where factory_id = #{factoryId} )
+    </select>
+    <select id="getMachineListByMachineTypeIds"  resultMap="MachineResult">
+        <include refid="getMachineSql"/>
+        where machine_type_id in
+        <foreach item="machineTypeId" collection="array" open="(" separator="," close=")">
+            #{machineTypeId}
+        </foreach>
+    </select>
+    <select id="getMachineListByMachineTypeId"  resultMap="MachineResult">
+        <include refid="getMachineSql"/>
+        where machine_type_id = #{machineTypeId}
+    </select>
+
+    <select id="getReportMachineList" resultMap="MachineResult">
+        SELECT
+        m.machine_id,
+        m.workshop_id,
+        m.machine_code,
+        m.machine_name,
+        m.machine_type_id,
+        m.machine_brand,
+        m.machine_ip,
+        m.mac_address,
+        m.capacity,
+        m.`status`,
+        m.remark
+        FROM workshop w LEFT JOIN machine m ON m.workshop_id = w.workshop_id
+        <where>
+            <if test="factoryId != null ">
+                AND w.factory_id = #{factoryId}
+            </if>
+            <if test="workshopId != null ">
+                AND w.workshop_id = #{workshopId}
+            </if>
+            <if test="machineTypeId != null ">
+                AND m.machine_type_id = #{machineTypeId}
+            </if>
+            <if test="machineIds != null and machineIds.size() > 0">
+                AND m.machine_id IN
+                <foreach item="machineId" collection="machineIds" open="(" separator="," close=")">
+                    #{machineId}
+                </foreach>
+            </if>
+        </where>
+    </select>
+
+    <select id="getMachineListByIds" resultMap="MachineResult">
+        <include refid="getMachineSql"/>
+        WHERE
+        machine_id IN
+        <foreach item="machineId" collection="machineIds" open="(" separator="," close=")">
+            #{machineId}
+        </foreach>
+    </select>
+
+    <select id="selectOrganizationInfo" resultType="com.cf.mes.domain.dto.OrganInfoDto">
+        SELECT
+            m.machine_id machineId,
+            m.workshop_id workshopId,
+            w.factory_id factoryId
+        FROM
+            machine m
+                LEFT JOIN workshop w ON m.workshop_id = w.workshop_id
+        WHERE
+            m.machine_id = #{machineId}
+    </select>
+</mapper>

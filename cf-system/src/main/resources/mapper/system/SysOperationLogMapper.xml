@@ -1,0 +1,129 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.cf.system.mapper.SysOperationLogMapper">
+    
+    <resultMap type="SysOperationLog" id="SysOperationLogResult">
+        <result property="logId"    column="log_id"    />
+        <result property="logType"    column="log_type"    />
+        <result property="title"    column="title"    />
+        <result property="url"    column="url"    />
+        <result property="method"    column="method"    />
+        <result property="operParam"    column="oper_param"    />
+        <result property="operResult"    column="oper_result"    />
+        <result property="operUser"    column="oper_user"    />
+        <result property="operIp"    column="oper_ip"    />
+        <result property="operTime"    column="oper_time"    />
+        <result property="errorMsg"    column="error_msg"    />
+        <result property="remark"    column="remark"    />
+    </resultMap>
+
+    <sql id="getSysOperationLogSql">
+        select log_id, log_type, title, url, method, oper_param, oper_result, oper_user, oper_ip, oper_time, error_msg, remark from sys_operation_log
+    </sql>
+
+    <select id="getSysOperationLogList" parameterType="SysOperationLog" resultMap="SysOperationLogResult">
+        <include refid="getSysOperationLogSql"/>
+        <where>  
+            <if test="logType != null  and logType != ''">
+                and log_type like concat('%', #{logType}, '%')
+            </if>
+            <if test="title != null  and title != ''">
+                and title like concat('%', #{title}, '%')
+            </if>
+            <if test="url != null  and url != ''">
+                and url like concat('%', #{url}, '%')
+            </if>
+            <if test="method != null  and method != ''">
+                and method like concat('%', #{method}, '%')
+            </if>
+            <if test="operParam != null  and operParam != ''">
+                and oper_param like concat('%', #{operParam}, '%')
+            </if>
+            <if test="operResult != null  and operResult != ''">
+                and oper_result like concat('%', #{operResult}, '%')
+            </if>
+            <if test="operUser != null  and operUser != ''">
+                and oper_user like concat('%',  #{operUser}, '%')
+            </if>
+            <if test="operIp != null  and operIp != ''">
+                and oper_ip like concat('%', #{operIp}, '%')
+            </if>
+            <if test="errorMsg != null  and errorMsg != ''">
+                and error_msg like concat('%', #{errorMsg}, '%')
+            </if>
+            <if test="remark != null  and remark != ''">
+                and remark like concat('%', #{remark}, '%')
+            </if>
+            <if test="operTime != null"><!-- 开始时间检索 -->
+                AND date_format(oper_time,'%y%m%d') &gt;= date_format(#{operTime},'%y%m%d')
+            </if>
+        </where>
+    </select>
+    
+    <select id="getSysOperationLogById" parameterType="Long" resultMap="SysOperationLogResult">
+          <include refid="getSysOperationLogSql"/>
+        where log_id = #{logId}
+    </select>
+        
+    <insert id="insertSysOperationLog" parameterType="SysOperationLog" useGeneratedKeys="true" keyProperty="logId">
+        insert into sys_operation_log
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="logType != null">log_type,</if>
+            <if test="title != null">title,</if>
+            <if test="url != null">url,</if>
+            <if test="method != null">method,</if>
+            <if test="operParam != null">oper_param,</if>
+            <if test="operResult != null">oper_result,</if>
+            <if test="operUser != null">oper_user,</if>
+            <if test="operIp != null">oper_ip,</if>
+            <if test="operTime != null">oper_time,</if>
+            <if test="errorMsg != null">error_msg,</if>
+            <if test="remark != null">remark,</if>
+         </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="logType != null">#{logType},</if>
+            <if test="title != null">#{title},</if>
+            <if test="url != null">#{url},</if>
+            <if test="method != null">#{method},</if>
+            <if test="operParam != null">#{operParam},</if>
+            <if test="operResult != null">#{operResult},</if>
+            <if test="operUser != null">#{operUser},</if>
+            <if test="operIp != null">#{operIp},</if>
+            <if test="operTime != null">#{operTime},</if>
+            <if test="errorMsg != null">#{errorMsg},</if>
+            <if test="remark != null">#{remark},</if>
+         </trim>
+    </insert>
+
+    <update id="updateSysOperationLog" parameterType="SysOperationLog">
+        update sys_operation_log
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="logType != null">log_type = #{logType},</if>
+            <if test="title != null">title = #{title},</if>
+            <if test="url != null">url = #{url},</if>
+            <if test="method != null">method = #{method},</if>
+            <if test="operParam != null">oper_param = #{operParam},</if>
+            <if test="operResult != null">oper_result = #{operResult},</if>
+            <if test="operUser != null">oper_user = #{operUser},</if>
+            <if test="operIp != null">oper_ip = #{operIp},</if>
+            <if test="operTime != null">oper_time = #{operTime},</if>
+            <if test="errorMsg != null">error_msg = #{errorMsg},</if>
+            <if test="remark != null">remark = #{remark},</if>
+        </trim>
+        where log_id = #{logId}
+    </update>
+
+    <delete id="deleteSysOperationLogById" parameterType="Long">
+        delete from sys_operation_log where log_id = #{logId}
+    </delete>
+
+    <delete id="deleteSysOperationLogByIds" parameterType="String">
+        delete from sys_operation_log where log_id in 
+        <foreach item="logId" collection="array" open="(" separator="," close=")">
+            #{logId}
+        </foreach>
+    </delete>
+    
+</mapper>

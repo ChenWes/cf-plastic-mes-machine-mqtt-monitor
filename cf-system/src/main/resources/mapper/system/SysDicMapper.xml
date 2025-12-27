@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.cf.system.mapper.SysDicMapper">
+    
+    <resultMap type="SysDic" id="SysDicResult">
+        <result property="dicId"    column="dic_id"    />
+        <result property="dicType"    column="dic_type"    />
+        <result property="dicCode"    column="dic_code"    />
+        <result property="dicName"    column="dic_name"    />
+        <result property="dicValue"    column="dic_value"    />
+        <result property="seqNo"    column="seq_no"    />
+        <result property="status"    column="status"    />
+        <result property="parentId"    column="parent_id"    />
+        <result property="createBy"    column="create_by"    />
+        <result property="createTime"    column="create_time"    />
+        <result property="updateBy"    column="update_by"    />
+        <result property="updateTime"    column="update_time"    />
+    </resultMap>
+
+    <sql id="getSysDicSql">
+        select dic_id, dic_type, dic_code, dic_name, dic_value, seq_no, status, parent_id, create_by, create_time, update_by, update_time from sys_dic
+    </sql>
+
+    <select id="getSysDicList" parameterType="SysDic" resultMap="SysDicResult">
+        <include refid="getSysDicSql"/>
+        <where>  
+            <if test="dicType != null  and dicType != ''"> and dic_type = #{dicType}</if>
+            <if test="dicCode != null  and dicCode != ''"> and dic_code = #{dicCode}</if>
+            <if test="dicName != null  and dicName != ''">
+                and (dic_name like concat('%', #{dicName}, '%') or dic_id in (select record_id from sys_lang_info where table_name='sys_dic' and column_name='dic_name' and value like concat('%', #{dicName}, '%')))
+            </if>
+            <if test="dicValue != null  and dicValue != ''"> and dic_value = #{dicValue}</if>
+            <if test="seqNo != null "> and seq_no = #{seqNo}</if>
+            <if test="status != null  and status != ''"> and status = #{status}</if>
+            <if test="parentId != null "> and parent_id = #{parentId}</if>
+        </where>
+    </select>
+    
+    <select id="getSysDicById" parameterType="Long" resultMap="SysDicResult">
+          <include refid="getSysDicSql"/>
+        where dic_id = #{dicId}
+    </select>
+
+    <select id="getSysDicByCode" parameterType="String" resultMap="SysDicResult">
+        <include refid="getSysDicSql"/>
+        where dic_code = #{dicCode}
+    </select>
+        
+    <insert id="insertSysDic" parameterType="SysDic" useGeneratedKeys="true" keyProperty="dicId">
+        insert into sys_dic
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="dicType != null and dicType != ''">dic_type,</if>
+            <if test="dicCode != null and dicCode != ''">dic_code,</if>
+            <if test="dicName != null">dic_name,</if>
+            <if test="dicValue != null">dic_value,</if>
+            <if test="seqNo != null">seq_no,</if>
+            <if test="status != null">status,</if>
+            <if test="parentId != null">parent_id,</if>
+            <if test="createBy != null">create_by,</if>
+            <if test="createTime != null">create_time,</if>
+            <if test="updateBy != null">update_by,</if>
+            <if test="updateTime != null">update_time,</if>
+         </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="dicType != null and dicType != ''">#{dicType},</if>
+            <if test="dicCode != null and dicCode != ''">#{dicCode},</if>
+            <if test="dicName != null">#{dicName},</if>
+            <if test="dicValue != null">#{dicValue},</if>
+            <if test="seqNo != null">#{seqNo},</if>
+            <if test="status != null">#{status},</if>
+            <if test="parentId != null">#{parentId},</if>
+            <if test="createBy != null">#{createBy},</if>
+            <if test="createTime != null">#{createTime},</if>
+            <if test="updateBy != null">#{updateBy},</if>
+            <if test="updateTime != null">#{updateTime},</if>
+         </trim>
+    </insert>
+
+    <update id="updateSysDic" parameterType="SysDic">
+        update sys_dic
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="dicType != null and dicType != ''">dic_type = #{dicType},</if>
+            <if test="dicCode != null and dicCode != ''">dic_code = #{dicCode},</if>
+            <if test="dicName != null">dic_name = #{dicName},</if>
+            <if test="dicValue != null">dic_value = #{dicValue},</if>
+            <if test="seqNo != null">seq_no = #{seqNo},</if>
+            <if test="status != null">status = #{status},</if>
+            <if test="parentId != null">parent_id = #{parentId},</if>
+            <if test="createBy != null">create_by = #{createBy},</if>
+            <if test="createTime != null">create_time = #{createTime},</if>
+            <if test="updateBy != null">update_by = #{updateBy},</if>
+            <if test="updateTime != null">update_time = #{updateTime},</if>
+        </trim>
+        where dic_id = #{dicId}
+    </update>
+
+    <delete id="deleteSysDicById" parameterType="Long">
+        delete from sys_dic where dic_id = #{dicId}
+    </delete>
+
+    <delete id="deleteSysDicByIds" parameterType="String">
+        delete from sys_dic where dic_id in 
+        <foreach item="dicId" collection="array" open="(" separator="," close=")">
+            #{dicId}
+        </foreach>
+    </delete>
+
+    <select id="getSysDicListByDicCodes" resultMap="SysDicResult">
+        <include refid="getSysDicSql"/>
+        where dic_code IN
+        <foreach item="dicCode" collection="list" open="(" separator="," close=")">
+            #{dicCode}
+        </foreach>
+    </select>
+
+</mapper>

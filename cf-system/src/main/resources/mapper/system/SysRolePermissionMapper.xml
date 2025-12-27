@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.cf.system.mapper.SysRolePermissionMapper">
+    
+    <resultMap type="SysRolePermission" id="SysRolePermissionResult">
+        <result property="rolePermissionId"    column="role_permission_id"    />
+        <result property="roleId"    column="role_id"    />
+        <result property="permissionId"    column="permission_id"    />
+        <result property="createBy"    column="create_by"    />
+        <result property="createTime"    column="create_time"    />
+        <result property="updateBy"    column="update_by"    />
+        <result property="updateTime"    column="update_time"    />
+    </resultMap>
+
+    <sql id="getSysRolePermissionSql">
+        select role_permission_id, role_id, permission_id, create_by, create_time, update_by, update_time from sys_role_permission
+    </sql>
+
+    <select id="getSysRolePermissionList" parameterType="SysRolePermission" resultMap="SysRolePermissionResult">
+        <include refid="getSysRolePermissionSql"/>
+        <where>  
+            <if test="roleId != null "> and role_id = #{roleId}</if>
+            <if test="permissionId != null "> and permission_id = #{permissionId}</if>
+        </where>
+    </select>
+    
+    <select id="getSysRolePermissionById" parameterType="Long" resultMap="SysRolePermissionResult">
+          <include refid="getSysRolePermissionSql"/>
+        where role_permission_id = #{rolePermissionId}
+    </select>
+
+    <select id="getSysRolePermissionByRoleId" parameterType="Long" resultMap="SysRolePermissionResult">
+        <include refid="getSysRolePermissionSql"/>
+        where role_id = #{roleId}
+    </select>
+        
+    <insert id="insertSysRolePermission" parameterType="SysRolePermission" useGeneratedKeys="true" keyProperty="rolePermissionId">
+        insert into sys_role_permission
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="roleId != null">role_id,</if>
+            <if test="permissionId != null">permission_id,</if>
+            <if test="createBy != null">create_by,</if>
+            <if test="createTime != null">create_time,</if>
+            <if test="updateBy != null">update_by,</if>
+            <if test="updateTime != null">update_time,</if>
+         </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="roleId != null">#{roleId},</if>
+            <if test="permissionId != null">#{permissionId},</if>
+            <if test="createBy != null">#{createBy},</if>
+            <if test="createTime != null">#{createTime},</if>
+            <if test="updateBy != null">#{updateBy},</if>
+            <if test="updateTime != null">#{updateTime},</if>
+         </trim>
+    </insert>
+
+    <update id="updateSysRolePermission" parameterType="SysRolePermission">
+        update sys_role_permission
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="roleId != null">role_id = #{roleId},</if>
+            <if test="permissionId != null">permission_id = #{permissionId},</if>
+            <if test="createBy != null">create_by = #{createBy},</if>
+            <if test="createTime != null">create_time = #{createTime},</if>
+            <if test="updateBy != null">update_by = #{updateBy},</if>
+            <if test="updateTime != null">update_time = #{updateTime},</if>
+        </trim>
+        where role_permission_id = #{rolePermissionId}
+    </update>
+
+    <delete id="deleteSysRolePermissionById" parameterType="Long">
+        delete from sys_role_permission where role_permission_id = #{rolePermissionId}
+    </delete>
+
+    <delete id="deleteSysRolePermissionByRoleId" parameterType="Long">
+        delete from sys_role_permission where role_id = #{roleId}
+    </delete>
+
+    <delete id="deleteSysRolePermissionByPermissionId" parameterType="Long">
+        delete from sys_role_permission  where permission_id=#{permissionId}
+    </delete>
+
+    <delete id="deleteSysRolePermissionByMenuId" parameterType="Long">
+        delete from sys_role_permission  where permission_id in ( select  permission_id from sys_permission where menu_id=#{menuId})
+    </delete>
+
+    <delete id="deleteSysRolePermissionByIds" parameterType="String">
+        delete from sys_role_permission where role_permission_id in 
+        <foreach item="rolePermissionId" collection="array" open="(" separator="," close=")">
+            #{rolePermissionId}
+        </foreach>
+    </delete>
+
+    <delete id="deleteSysRolePermissionByRoleIds" parameterType="String">
+        delete from sys_role_permission where role_id in
+        <foreach item="roleId" collection="array" open="(" separator="," close=")">
+            #{roleId}
+        </foreach>
+    </delete>
+
+    <insert id="batchRolePermission">
+        insert into sys_role_permission(role_id, permission_id,create_by,create_time) values
+        <foreach item="item" index="index" collection="list" separator=",">
+            (#{item.roleId},#{item.permissionId},#{item.createBy},#{item.createTime})
+        </foreach>
+    </insert>
+    
+</mapper>

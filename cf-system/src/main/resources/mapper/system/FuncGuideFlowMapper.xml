@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.cf.system.mapper.FuncGuideFlowMapper">
+    
+    <resultMap type="FuncGuideFlow" id="FuncGuideFlowResult">
+        <result property="guideFlowId"    column="guide_flow_id"    />
+        <result property="funcGuideCode"    column="func_guide_code"    />
+        <result property="funcGuideName"    column="func_guide_name"    />
+        <result property="flowJson"    column="flow_json"    />
+        <result property="settingsJson"    column="settings_json"    />
+        <result property="lang"    column="lang"    />
+        <result property="createBy"    column="create_by"    />
+        <result property="createTime"    column="create_time"    />
+        <result property="updateBy"    column="update_by"    />
+        <result property="updateTime"    column="update_time"    />
+    </resultMap>
+
+    <sql id="getFuncGuideFlowVo">
+        select guide_flow_id, func_guide_code, func_guide_name, flow_json, settings_json, lang, create_by, create_time, update_by, update_time from func_guide_flow
+    </sql>
+
+    <select id="getFuncGuideFlowList" parameterType="FuncGuideFlow" resultMap="FuncGuideFlowResult">
+        <include refid="getFuncGuideFlowVo"/>
+        <where>  
+            <if test="funcGuideCode != null  and funcGuideCode != ''"> and func_guide_code = #{funcGuideCode}</if>
+            <if test="funcGuideName != null  and funcGuideName != ''"> and func_guide_name like concat('%', #{funcGuideName}, '%')</if>
+            <if test="flowJson != null  and flowJson != ''"> and flow_json = #{flowJson}</if>
+            <if test="settingsJson != null  and settingsJson != ''"> and settings_json = #{settingsJson}</if>
+            <if test="lang != null  and lang != ''"> and lang = #{lang}</if>
+        </where>
+    </select>
+
+    <select id="getFuncGuideFlowListByGuideFlowIds" resultMap="FuncGuideFlowResult">
+        <include refid="getFuncGuideFlowVo"/>
+        where guide_flow_id in
+        <foreach item="guideFlowId" collection="list" open="(" separator="," close=")">
+            #{guideFlowId}
+        </foreach>
+    </select>
+    
+    <select id="getFuncGuideFlowByGuideFlowId" parameterType="Long" resultMap="FuncGuideFlowResult">
+        <include refid="getFuncGuideFlowVo"/>
+        where guide_flow_id = #{guideFlowId}
+    </select>
+        
+    <insert id="insertFuncGuideFlow" parameterType="FuncGuideFlow" useGeneratedKeys="true" keyProperty="guideFlowId">
+        insert into func_guide_flow
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="funcGuideCode != null and funcGuideCode != ''">func_guide_code,</if>
+            <if test="funcGuideName != null and funcGuideName != ''">func_guide_name,</if>
+            <if test="flowJson != null">flow_json,</if>
+            <if test="settingsJson != null">settings_json,</if>
+            <if test="lang != null and lang != ''">lang,</if>
+            <if test="createBy != null">create_by,</if>
+            <if test="createTime != null">create_time,</if>
+            <if test="updateBy != null">update_by,</if>
+            <if test="updateTime != null">update_time,</if>
+         </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="funcGuideCode != null and funcGuideCode != ''">#{funcGuideCode},</if>
+            <if test="funcGuideName != null and funcGuideName != ''">#{funcGuideName},</if>
+            <if test="flowJson != null">#{flowJson},</if>
+            <if test="settingsJson != null">#{settingsJson},</if>
+            <if test="lang != null and lang != ''">#{lang},</if>
+            <if test="createBy != null">#{createBy},</if>
+            <if test="createTime != null">#{createTime},</if>
+            <if test="updateBy != null">#{updateBy},</if>
+            <if test="updateTime != null">#{updateTime},</if>
+         </trim>
+    </insert>
+
+    <update id="updateFuncGuideFlow" parameterType="FuncGuideFlow">
+        update func_guide_flow
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="funcGuideCode != null and funcGuideCode != ''">func_guide_code = #{funcGuideCode},</if>
+            <if test="funcGuideName != null and funcGuideName != ''">func_guide_name = #{funcGuideName},</if>
+            <if test="flowJson != null">flow_json = #{flowJson},</if>
+            <if test="settingsJson != null">settings_json = #{settingsJson},</if>
+            <if test="lang != null and lang != ''">lang = #{lang},</if>
+            <if test="createBy != null">create_by = #{createBy},</if>
+            <if test="createTime != null">create_time = #{createTime},</if>
+            <if test="updateBy != null">update_by = #{updateBy},</if>
+            <if test="updateTime != null">update_time = #{updateTime},</if>
+        </trim>
+        where guide_flow_id = #{guideFlowId}
+    </update>
+
+    <delete id="deleteFuncGuideFlowByGuideFlowId" parameterType="Long">
+        delete from func_guide_flow where guide_flow_id = #{guideFlowId}
+    </delete>
+
+    <delete id="deleteFuncGuideFlowByGuideFlowIds" parameterType="String">
+        delete from func_guide_flow where guide_flow_id in 
+        <foreach item="guideFlowId" collection="array" open="(" separator="," close=")">
+            #{guideFlowId}
+        </foreach>
+    </delete>
+</mapper>

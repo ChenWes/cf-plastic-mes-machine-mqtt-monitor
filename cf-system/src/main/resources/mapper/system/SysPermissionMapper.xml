@@ -1,0 +1,150 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+		PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+		"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.cf.system.mapper.SysPermissionMapper">
+
+	<resultMap type="SysPermission" id="SysPermissionResult">
+		<id     property="permissionId"         column="permission_id"        />
+		<result property="permissionCode"       column="permission_code"      />
+		<result property="permissionName"       column="permission_name"      />
+		<result property="menuId"       column="menu_id"      />
+		<result property="status"         column="status"         />
+		<result property="remark"         column="remark"         />
+		<result property="createBy"       column="create_by"      />
+		<result property="createTime"     column="create_time"    />
+		<result property="updateTime"     column="update_time"    />
+		<result property="updateBy"       column="update_by"      />
+
+	</resultMap>
+
+	<sql id="getPermissionSql">
+		SELECT `sys_permission`.`permission_id`,
+		`sys_permission`.`menu_id`,
+		`sys_permission`.`permission_code`,
+		`sys_permission`.`permission_name`,
+		`sys_permission`.`remark`,
+		`sys_permission`.`status`,
+		`sys_permission`.`create_by`,
+		`sys_permission`.`create_time`,
+		`sys_permission`.`update_by`,
+		`sys_permission`.`update_time`
+		FROM `sys_permission`
+	</sql>
+
+	<select id="getPermissionList" parameterType="SysPermission" resultMap="SysPermissionResult">
+		<include refid="getPermissionSql"/>
+		<where>
+			<if test="permissionName != null and permissionName != ''">
+				AND (permission_name like concat('%', #{permissionName}, '%') or permission_id in (select record_id from sys_lang_info where table_name='sys_permission' and column_name='permission_name' and value like concat('%', #{permissionName}, '%')))
+			</if>
+			<if test="permissionCode != null and permissionCode != ''">
+				AND permission_code like concat('%', #{permissionCode}, '%')
+			</if>
+			<if test="status != null and status != ''">
+				AND status = #{status}
+			</if>
+			<if test="menuId != null and menuId !=''">
+				AND menu_id = #{menuId}
+			</if>
+		</where>
+		order by menu_id,permission_code
+	</select>
+
+	<select id="getPermissionById" parameterType="Long" resultMap="SysPermissionResult">
+		<include refid="getPermissionSql"/>
+		where permission_id = #{permissionId}
+	</select>
+
+	<select id="getPermissionByUserId" parameterType="Long" resultMap="SysPermissionResult">
+		<include refid="getPermissionSql"/>
+		where permission_id in
+		(
+		SELECT DISTINCT
+		permission.permission_id
+		FROM
+		sys_user
+		usertable LEFT JOIN sys_user_permission permission ON usertable.user_id = permission.user_id
+		WHERE
+		usertable.user_id = #{userId}
+		AND usertable.status = 'Y'
+		)
+	</select>
+
+	<select id="getPermissionByMenuId" parameterType="Long" resultMap="SysPermissionResult">
+		<include refid="getPermissionSql"/>
+		where menu_id =#{menuId}
+	</select>
+
+
+	<select id="getPermissionByRoleId" parameterType="Long" resultMap="SysPermissionResult">
+		<include refid="getPermissionSql"/>
+		where permission_id in
+		(
+		SELECT DISTINCT
+		permission.permission_id
+		FROM
+		sys_role
+		roletable LEFT JOIN sys_role_permission permission ON roletable.role_id = permission.role_id
+		WHERE
+		roletable.role_id = #{roleId}
+		AND roletable.status = 'Y'
+		)
+	</select>
+
+	<select id="getPermissionByCode" parameterType="String" resultMap="SysPermissionResult">
+		<include refid="getPermissionSql"/>
+		where permission_code = #{permissionCode}
+	</select>
+
+	<update id="updatePermission" parameterType="SysPermission">
+		update sys_permission
+		<set>
+			<if test="permissionName != null and permissionName != ''">permission_name = #{permissionName},</if>
+			<if test="status != null">status = #{status},</if>
+			<if test="menuId !=null ">menu_id = #{menuId},</if>
+			<if test="remark != null">remark = #{remark},</if>
+			<if test="updateBy != null and updateBy != ''">update_by = #{updateBy},</if>
+			<if test="updateTime != null">update_time = #{updateTime}</if>
+		</set>
+		where permission_id = #{permissionId}
+	</update>
+
+	<insert id="insertPermission" parameterType="SysPermission" useGeneratedKeys="true" keyProperty="permissionId">
+		insert into sys_permission(
+		<if test="permissionId != null ">permission_id,</if>
+		<if test="menuId != null ">menu_id,</if>
+		<if test="permissionCode != null and permissionCode != ''">permission_code,</if>
+		<if test="permissionName != null and permissionName != ''">permission_name,</if>
+		<if test="status != null and status != ''">status,</if>
+		<if test="remark != null and remark != ''">remark,</if>
+		<if test="createBy != null and createBy != ''">create_by,</if>
+		<if test="createTime != null">create_time</if>
+		)values(
+		<if test="permissionId != null ">#{permissionId},</if>
+		<if test="menuId != null ">#{menuId},</if>
+		<if test="permissionCode != null and permissionCode != ''">#{permissionCode},</if>
+		<if test="permissionName != null and permissionName != ''">#{permissionName},</if>
+		<if test="status != null and status != ''">#{status},</if>
+		<if test="remark != null and remark != ''">#{remark},</if>
+		<if test="createBy != null and createBy != ''">#{createBy},</if>
+		<if test="createTime != null">#{createTime}</if>
+		)
+	</insert>
+
+	<delete id="deletePermissionById" parameterType="Long">
+		delete from sys_permission where permission_id = #{permissionId}
+	</delete>
+
+	<delete id="deletePermissionByMenuId" parameterType="Long">
+		delete from sys_permission where menu_id = #{menuId}
+	</delete>
+
+	<delete id="deletePermissionByIds" parameterType="Long">
+		delete from sys_permission where  permission_id in
+		<foreach collection="array" item="permissionId" open="(" separator="," close=")">
+			#{permissionId}
+		</foreach>
+	</delete>
+
+</mapper> 

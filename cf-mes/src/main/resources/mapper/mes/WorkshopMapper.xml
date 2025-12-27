@@ -1,0 +1,127 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.cf.mes.mapper.WorkshopMapper">
+
+    <resultMap type="Workshop" id="WorkshopResult">
+        <result property="workshopId"    column="workshop_id"    />
+        <result property="factoryId"    column="factory_id"    />
+        <result property="workshopCode"    column="workshop_code"    />
+        <result property="workshopName"    column="workshop_name"    />
+        <result property="status"    column="status"    />
+        <result property="createBy"    column="create_by"    />
+        <result property="createTime"    column="create_time"    />
+        <result property="updateBy"    column="update_by"    />
+        <result property="updateTime"    column="update_time"    />
+        <result property="remark"    column="remark"    />
+    </resultMap>
+
+    <sql id="getWorkshopSql">
+        select workshop_id, factory_id, workshop_code, workshop_name, status, create_by, create_time, update_by, update_time,remark from workshop
+    </sql>
+
+    <select id="getWorkshopList" parameterType="Workshop" resultMap="WorkshopResult">
+        <include refid="getWorkshopSql"/>
+        <where>
+            <if test="factoryId != null "> and factory_id = #{factoryId}</if>
+            <if test="workshopCode != null  and workshopCode != ''"> and workshop_code like concat('%', #{workshopCode}, '%')</if>
+            <if test="workshopName != null  and workshopName != ''"> and (workshop_name like concat('%', #{workshopName}, '%') or workshop_id in (select record_id from sys_lang_info where table_name='workshop' and column_name='workshop_name' and value like concat('%', #{workshopName}, '%')))</if>
+            <if test="remark != null  and remark != ''"> and remark like concat('%', #{remark}, '%')</if>
+            <if test="status != null  and status != ''"> and status = #{status}</if>
+        </where>
+    </select>
+
+    <select id="getWorkshopListByFactoryId" resultMap="WorkshopResult">
+        <include refid="getWorkshopSql"/>
+        where factory_id = #{factoryId}
+    </select>
+
+    <select id="getWorkshopById" parameterType="Long" resultMap="WorkshopResult">
+          <include refid="getWorkshopSql"/>
+        where workshop_id = #{workshopId}
+    </select>
+
+    <select id="getWorkshopByCode" parameterType="String" resultMap="WorkshopResult">
+        <include refid="getWorkshopSql"/>
+        where workshop_code = #{workshopCode}
+    </select>
+
+    <select id="getWorkshopListByFactoryIds"  parameterType="String" resultMap="WorkshopResult">
+        <include refid="getWorkshopSql"/>
+        where factory_id in
+        <foreach item="factoryId" collection="array" open="(" separator="," close=")">
+            #{factoryId}
+        </foreach>
+    </select>
+
+    <insert id="insertWorkshop" parameterType="Workshop" useGeneratedKeys="true" keyProperty="workshopId">
+        insert into workshop
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="factoryId != null">factory_id,</if>
+            <if test="workshopCode != null and workshopCode != ''">workshop_code,</if>
+            <if test="workshopName != null">workshop_name,</if>
+            <if test="status != null">status,</if>
+            <if test="createBy != null">create_by,</if>
+            <if test="createTime != null">create_time,</if>
+            <if test="updateBy != null">update_by,</if>
+            <if test="updateTime != null">update_time,</if>
+            <if test="remark != null">remark,</if>
+         </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="factoryId != null">#{factoryId},</if>
+            <if test="workshopCode != null and workshopCode != ''">#{workshopCode},</if>
+            <if test="workshopName != null">#{workshopName},</if>
+            <if test="status != null">#{status},</if>
+            <if test="createBy != null">#{createBy},</if>
+            <if test="createTime != null">#{createTime},</if>
+            <if test="updateBy != null">#{updateBy},</if>
+            <if test="updateTime != null">#{updateTime},</if>
+            <if test="remark != null">#{remark},</if>
+         </trim>
+    </insert>
+
+    <update id="updateWorkshop" parameterType="Workshop">
+        update workshop
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="factoryId != null">factory_id = #{factoryId},</if>
+            <if test="workshopName != null">workshop_name = #{workshopName},</if>
+            <if test="status != null">status = #{status},</if>
+            <if test="createBy != null">create_by = #{createBy},</if>
+            <if test="createTime != null">create_time = #{createTime},</if>
+            <if test="updateBy != null">update_by = #{updateBy},</if>
+            <if test="updateTime != null">update_time = #{updateTime},</if>
+            <if test="remark != null">remark = #{remark},</if>
+        </trim>
+        where workshop_id = #{workshopId}
+    </update>
+
+    <delete id="deleteWorkshopById" parameterType="Long">
+        delete from workshop where workshop_id = #{workshopId}
+    </delete>
+
+    <delete id="deleteWorkshopByIds" parameterType="String">
+        delete from workshop where workshop_id in
+        <foreach item="workshopId" collection="array" open="(" separator="," close=")">
+            #{workshopId}
+        </foreach>
+    </delete>
+
+    <select id="getWorkshopListByIds" resultMap="WorkshopResult">
+        <include refid="getWorkshopSql"/>
+        where workshop_id in
+        <foreach item="workshopId" collection="list" open="(" separator="," close=")">
+            #{workshopId}
+        </foreach>
+    </select>
+
+
+    <select id="getSlimWorkshopList" parameterType="Workshop" resultMap="WorkshopResult">
+        <include refid="getWorkshopSql"/>
+        <where>
+            <if test="factoryId != null">  and factory_id = #{factoryId}</if>
+            <if test="workshopId != null"> and workshop_id = #{workshopId}</if>
+        </where>
+    </select>
+
+</mapper>

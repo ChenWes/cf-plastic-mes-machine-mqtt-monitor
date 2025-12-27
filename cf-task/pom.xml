@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <parent>
+        <artifactId>cf-app</artifactId>
+        <groupId>com.cf</groupId>
+        <version>1.0.0-SNAPSHOT</version>
+    </parent>
+    <modelVersion>4.0.0</modelVersion>
+
+    <artifactId>cf-task</artifactId>
+
+    <dependencies>
+        <!-- 定时任务 -->
+        <dependency>
+            <groupId>com.cf</groupId>
+            <artifactId>cf-common</artifactId>
+        </dependency>
+
+        <!-- mes业务依赖 -->
+        <dependency>
+            <groupId>com.cf</groupId>
+            <artifactId>cf-mes</artifactId>
+        </dependency>
+
+        <!-- 定时任务调度 -->
+        <dependency>
+            <groupId>com.xuxueli</groupId>
+            <artifactId>xxl-job-core</artifactId>
+            <version>${xxl-job.version}</version>
+        </dependency>
+
+    </dependencies>
+
+</project>

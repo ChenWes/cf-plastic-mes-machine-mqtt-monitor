@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.cf.mes.mapper.GroupMapper">
+    <resultMap id="GroupResult" type="com.cf.mes.domain.Group">
+        <result property="groupId" column="group_id"/>
+        <result property="deptId" column="dept_id"/>
+        <result property="groupCode" column="group_code"/>
+        <result property="groupName" column="group_name"/>
+        <result property="status" column="status"/>
+        <result property="remark" column="remark"/>
+        <result property="createBy" column="create_by"/>
+        <result property="createTime" column="create_time"/>
+        <result property="updateBy" column="update_by"/>
+        <result property="updateTime" column="update_time"/>
+    </resultMap>
+    <sql id="getGroupSql">
+        select group_id, dept_id, group_code, group_name, status, remark, create_by, create_time, update_by, update_time from `group`
+    </sql>
+
+    <insert id="insertGroup" parameterType="com.cf.mes.domain.Group" useGeneratedKeys="true" keyProperty="groupId">
+        insert into `group`
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="deptId != null">dept_id,</if>
+            <if test="groupCode != null and groupCode != ''">group_code,</if>
+            <if test="groupName != null">group_name,</if>
+            <if test="status != null">status,</if>
+            <if test="createBy != null">create_by,</if>
+            <if test="createTime != null">create_time,</if>
+            <if test="updateBy != null">update_by,</if>
+            <if test="updateTime != null">update_time,</if>
+            <if test="remark != null">remark,</if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="deptId != null">#{deptId},</if>
+            <if test="groupCode != null and groupCode != ''">#{groupCode},</if>
+            <if test="groupName != null">#{groupName},</if>
+            <if test="status != null">#{status},</if>
+            <if test="createBy != null">#{createBy},</if>
+            <if test="createTime != null">#{createTime},</if>
+            <if test="updateBy != null">#{updateBy},</if>
+            <if test="updateTime != null">#{updateTime},</if>
+            <if test="remark != null">#{remark},</if>
+        </trim>
+    </insert>
+    <update id="updateGroup" parameterType="com.cf.mes.domain.Group">
+        update `group`
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="deptId != null">dept_id = #{deptId},</if>
+            <if test="groupName != null">group_name = #{groupName},</if>
+            <if test="status != null">status = #{status},</if>
+            <if test="createBy != null">create_by = #{createBy},</if>
+            <if test="createTime != null">create_time = #{createTime},</if>
+            <if test="updateBy != null">update_by = #{updateBy},</if>
+            <if test="updateTime != null">update_time = #{updateTime},</if>
+            <if test="remark != null">remark = #{remark},</if>
+        </trim>
+        where group_id = #{groupId}
+    </update>
+    <delete id="deleteGroupById" parameterType="Long">
+        delete from `group` where group_id = #{groupId}
+    </delete>
+    <delete id="deleteGroupByIds">
+        delete from `group` where group_id in
+        <foreach item="groupId" collection="array" open="(" separator="," close=")">
+            #{groupId}
+        </foreach>
+    </delete>
+
+    <select id="getGroupById" resultMap="GroupResult" parameterType="Long">
+      <include refid="getGroupSql"/>
+        where group_id = #{groupId}
+    </select>
+    <select id="getGroupByCode" resultMap="GroupResult" parameterType="String">
+        <include refid="getGroupSql"/>
+        where group_code = #{groupCode}
+    </select>
+    <select id="getGroupList" resultMap="GroupResult">
+        <include refid="getGroupSql"/>
+        <where>
+            <if test="deptId != null "> and dept_id = #{deptId}</if>
+            <if test="groupCode != null  and groupCode != ''"> and group_code like concat('%', #{groupCode}, '%')</if>
+            <if test="groupName != null  and groupName != ''"> and (group_name like concat('%', #{groupName}, '%') or group_id in (select record_id from sys_lang_info where table_name='group' and column_name='group_name' and value like concat('%', #{groupName}, '%')))</if>
+            <if test="status != null  and status != ''"> and status = #{status}</if>
+            <if test="remark != null  and remark != ''"> and remark like concat('%', #{remark}, '%')</if>
+        </where>
+    </select>
+
+    <select id="getGroupByIdList" resultMap="GroupResult">
+        <include refid="getGroupSql"/>
+        where group_id in
+        <foreach item="groupId" collection="list" open="(" separator="," close=")">
+            #{groupId}
+        </foreach>
+    </select>
+</mapper>

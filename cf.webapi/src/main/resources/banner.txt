@@ -1,0 +1,3 @@
+Application Version: ${cf.version}
+Spring Boot Version: ${spring-boot.version}
+CF APP　开发框架
