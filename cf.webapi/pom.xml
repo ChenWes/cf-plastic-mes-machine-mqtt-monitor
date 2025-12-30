@@ -69,10 +69,16 @@
             <artifactId>cf-quartz</artifactId>
         </dependency>
         -->
-        <dependency>
+        <!--<dependency>
             <groupId>com.cf</groupId>
             <artifactId>cf-task</artifactId>
+        </dependency>-->
+
+        <dependency>
+            <groupId>com.cf</groupId>
+            <artifactId>cf-mqtt-monitor</artifactId>
         </dependency>
+
     </dependencies>
 
     <build>

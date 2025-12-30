@@ -18,10 +18,16 @@ cf:
 # 连接websocket，广播消息
 webSocketUri: ${WEBSOCKET_URL:ws://10.8.0.13:12345/ws?channel=master&lang=en_US}
 
+# i18n数据国际化
+i18n:
+  data:
+    init:
+      enable: false
+
 # 开发环境配置
 server:
   # 服务器的HTTP端口，默认为8080
-  port: 8081
+  port: 18081
   servlet:
     # 应用的访问路径
     context-path: /
@@ -159,57 +165,6 @@ jetcache:
       host: ${spring.redis.host}
       port: ${spring.redis.port}
 
-mes:
-  report:
-    machine-usage-rate-settlement:
-      fields:
-        - field: production
-          name: 生產時間
-          status: produce
-          desc: 生產時間=使用時間
-          i18n:
-            en_US: Production Time
-            th_TH: เวลาในการผลิต
-            zh_CN: 生产时间
-            zh_TW: 生產時間
-        - field: qualityCtrl
-          name: QC測試時間
-          status: waitEmployee,qcConfirm
-          desc: QC測試時間=待人手+QC確認時間
-          i18n:
-            en_US: QC Test Time
-            th_TH: เวลาการทดสอบ QC
-            zh_CN: QC测试时间
-            zh_TW: QC測試時間
-        - field: waitMaterial
-          name: 待料時間
-          status: waitMaterial,Other
-          desc: 待料時間=上模後待料時間+其他時間
-          i18n:
-            en_US: time of wait for materials
-            th_TH: เวลารอ
-            zh_CN: 待料时间
-            zh_TW: 待料時間
-        - field: upDownMold
-          name: 上落模時間
-          status: transportMould,,debugMachine
-          desc: 上落模時間=轉模+轉顏色+調機
-          i18n:
-            en_US: Up and down mold time
-            th_TH: เวลาแม่พิมพ์บนและล่าง
-            zh_CN: 上落模时间
-            zh_TW: 上落模時間
-        - field: others
-          name: 其他時間
-          status: exclude above
-          desc: 其他時間=休假時間+其他類似時間+待包材+待工程確認時間
-          i18n:
-            en_US: others
-            th_TH: เวลาอื่น ๆ
-            zh_CN: 其他时间
-            zh_TW: 其他時間
-
-
 ## xxl-job 调度任务配置
 xxl:
   job:
@@ -231,3 +186,15 @@ xxl:
       logretentiondays: 3
       ### 执行器端口号 [选填]：小于等于0则自动获取；默认端口为9999，单机部署多个执行器时，注意要配置不同执行器端口；
       port: ${XXL_JOB_EXECUTOR_PORT:9999}
+
+wms:
+  mqtt:
+    #这里要写 tcp://  不能是 mqtt,不然不是合法的 schema，源码中有
+    url: ${WMS_MQTT_URL:tcp://10.8.0.13:1883}
+    clientId: ${WMS_MQTT_CLIENTID:cfwms-mqtt-monitor}
+    # Web Publish msg to iot device, iot device need to subscribe this topic
+    receiveTopics: ${WMS_MQTT_RECEIVE_TOPICS:/estation/90A9F7300200/+}
+    username: ${WMS_MQTT_USERNAME:}
+    password: ${WMS_MQTT_PASSWORD:}
+    timeout: ${WMS_MQTT_TIMEOUT:10}
+    keepalive: ${WMS_MQTT_KEEPALIVE:20}

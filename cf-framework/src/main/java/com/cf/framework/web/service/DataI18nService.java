@@ -16,6 +16,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.ListUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.stereotype.Component;
 
@@ -40,6 +41,9 @@ public class DataI18nService implements IDataI18nService {
 
     private static final String PREFIX = "I18N";
 
+    @Value("${i18n.data.init.enable}")
+    private Boolean i18nDataInitEnable;
+
     @Autowired
     private ISysLangInfoService sysLangInfoService;
 
@@ -61,6 +65,9 @@ public class DataI18nService implements IDataI18nService {
     @PostConstruct
     @Override
     public void initCache() {
+        if (!i18nDataInitEnable) {
+            return;
+        }
         List<String> langs = Arrays.stream(LangInfoType.values()).map(String::valueOf).collect(Collectors.toList());
         List<String> tables = Arrays.stream(LangInfoTableName.values()).map(LangInfoTableName::getValue)
                 .collect(Collectors.toList());

@@ -225,6 +225,13 @@
                 <version>${cf.version}</version>
             </dependency>
 
+            <!-- mqtt-monitor模块-->
+            <dependency>
+                <groupId>com.cf</groupId>
+                <artifactId>cf-mqtt-monitor</artifactId>
+                <version>1.0.0-SNAPSHOT</version>
+            </dependency>
+
             <!-- 通过添加注解的方式，不需要为类编写getter或eques方法-->
             <dependency>
                 <groupId>org.projectlombok</groupId>
@@ -275,6 +282,7 @@
         <module>cf-system</module>
         <module>cf-quartz</module>
         <module>cf-task</module>
+        <module>cf-mqtt-monitor</module>
     </modules>
 
     <dependencies>
