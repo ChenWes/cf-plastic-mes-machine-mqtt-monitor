@@ -35,4 +35,15 @@ public class RedisConst {
     public static final String WMS_PTL_HIS_STATION_STATUS_INFO_KEY = "WMS:PTL:HIS:STATION_STATUS_INFO:";
 
 
+    /**
+     * 干燥机 参数缓存
+     */
+    public static final String DRYING_MACHINE_PARAM_HASH_KEY = "DRYING_MACHINE_PARAM:";
+
+    /**
+     * 模温机 参数缓存
+     */
+    public static final String MOULD_TEMPERATURE_MACHINE_PARAM_HASH_KEY = "MOULD_TEMPERATURE_MACHINE_PARAM:";
+
+
 }

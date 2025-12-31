@@ -193,7 +193,7 @@ wms:
     url: ${WMS_MQTT_URL:tcp://10.8.0.13:1883}
     clientId: ${WMS_MQTT_CLIENTID:cfwms-mqtt-monitor}
     # Web Publish msg to iot device, iot device need to subscribe this topic
-    receiveTopics: ${WMS_MQTT_RECEIVE_TOPICS:/estation/90A9F7300200/+}
+    receiveTopics: ${WMS_MQTT_RECEIVE_TOPICS:/estation/90A9F7300200/+,gateway/device/+/+/+}
     username: ${WMS_MQTT_USERNAME:}
     password: ${WMS_MQTT_PASSWORD:}
     timeout: ${WMS_MQTT_TIMEOUT:10}

@@ -7,4 +7,5 @@ public class JobOrderRedisKeyConstants {
     public static final String JOB_ORDER_ORDER_PROCESS_MASTER_KEY_PREFIX = "ORDER_PROCESSING_MASTER:";
 
     public static final String JOB_ORDER_LOCK_KEY_PREFIX = "JOB_ORDER_LOCK:";
+
 }
