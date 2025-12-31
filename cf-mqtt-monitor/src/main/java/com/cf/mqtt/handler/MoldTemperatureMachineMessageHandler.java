@@ -53,10 +53,13 @@ public class MoldTemperatureMachineMessageHandler implements MqttMessageHandler 
                 return;
             }
 
+            // 1. 缓存数据
+            updateRedisCache(machinePayload);
+            // 2. 下发通知
 
         } catch (Exception e) {
-            log.error("Error while handling heartbeat message", e);
-            throw new MessagingException("Failed to process heartbeat message", e);
+            log.error("Error while handling moldTemperatureMachine message", e);
+            throw new MessagingException("Failed to process moldTemperatureMachine message", e);
         }
     }
 
@@ -86,13 +89,22 @@ public class MoldTemperatureMachineMessageHandler implements MqttMessageHandler 
         }
         String paramName = machinePayload.getName();
         String deviceId = machinePayload.getDeviceId();
-        String machineCode = deviceId.substring(deviceId.lastIndexOf("_") + 1);
+        if (deviceId == null || deviceId.trim().isEmpty()) {
+            log.warn("DeviceId is null or empty, cannot update cache");
+            return;
+        }
+        int lastUnderscoreIndex = deviceId.lastIndexOf("_");
+        if (lastUnderscoreIndex == -1 || lastUnderscoreIndex >= deviceId.length() - 1) {
+            log.warn("Invalid deviceId format: {}, cannot extract machineCode", deviceId);
+            return;
+        }
+        String machineCode = deviceId.substring(lastUnderscoreIndex + 1);
         String key = RedisConst.MOULD_TEMPERATURE_MACHINE_PARAM_HASH_KEY + machineCode;
         String cacheMapValue = redisCache.getCacheMapValue(key, paramName);
         if (cacheMapValue == null) {
             redisCache.setCacheMapValue(key, paramName, JSON.toJSONString(machinePayload));
         } else {
-            DryingMachinePayload cache = JSON.parseObject(cacheMapValue, DryingMachinePayload.class);
+            MoldTemperatureMachinePayload cache = JSON.parseObject(cacheMapValue, MoldTemperatureMachinePayload.class);
             Date lastTimestamp = cache.getTimestamp();
             if (machinePayload.getTimestamp().compareTo(lastTimestamp) > 0) {
                 redisCache.setCacheMapValue(key, paramName, JSON.toJSONString(machinePayload));

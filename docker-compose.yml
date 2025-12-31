@@ -51,6 +51,14 @@ services:
       # XXL_JOB_EXECUTOR_ADDRESS:
       XXL_JOB_EXECUTOR_IP: 10.8.0.11
       XXL_JOB_EXECUTOR_PORT: 9999
+      # MQTT 配置
+      CF_MONITOR_MQTT_URL: tcp://8.149.246.48:1883
+      CF_MONITOR_MQTT_CLIENTID: cfwms-mqtt-monitor
+      CF_MONITOR_MQTT_RECEIVE_TOPICS: gateway/device/+/+/+
+      #CF_MONITOR_MQTT_USERNAME:
+      #CF_MONITOR_MQTT_PASSWORD:
+      CF_MONITOR_MQTT_TIMEOUT: 10
+      CF_MONITOR_MQTT_KEEPALIVE: 20
       # 证书配置
       TRUST_STORE: /app/ssl/server.jks
       TRUST_STORE_PASSWORD: admin123

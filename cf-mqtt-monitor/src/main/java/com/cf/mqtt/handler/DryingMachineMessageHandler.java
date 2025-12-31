@@ -31,7 +31,6 @@ public class DryingMachineMessageHandler implements MqttMessageHandler {
 
     @Override
     public String topic() {
-        // return "^gateway/device/[a-zA-Z0-9_]+/data/[a-z_]+$";
         return "^gateway/device/drying_machine_[^/]+/data/[^/]+$";
     }
 
@@ -58,8 +57,8 @@ public class DryingMachineMessageHandler implements MqttMessageHandler {
             // 2. 下发通知
 
         } catch (Exception e) {
-            log.error("Error while handling heartbeat message", e);
-            throw new MessagingException("Failed to process heartbeat message", e);
+            log.error("Error while handling dryingMachine message", e);
+            throw new MessagingException("Failed to process dryingMachine message", e);
         }
     }
 
@@ -89,7 +88,16 @@ public class DryingMachineMessageHandler implements MqttMessageHandler {
         }
         String paramName = machinePayload.getName();
         String deviceId = machinePayload.getDeviceId();
-        String machineCode = deviceId.substring(deviceId.lastIndexOf("_") + 1);
+        if (deviceId == null || deviceId.trim().isEmpty()) {
+            log.warn("DeviceId is null or empty, cannot update cache");
+            return;
+        }
+        int lastUnderscoreIndex = deviceId.lastIndexOf("_");
+        if (lastUnderscoreIndex == -1 || lastUnderscoreIndex >= deviceId.length() - 1) {
+            log.warn("Invalid deviceId format: {}, cannot extract machineCode", deviceId);
+            return;
+        }
+        String machineCode = deviceId.substring(lastUnderscoreIndex + 1);
         String key = RedisConst.DRYING_MACHINE_PARAM_HASH_KEY + machineCode;
         String cacheMapValue = redisCache.getCacheMapValue(key, paramName);
         if (cacheMapValue == null) {

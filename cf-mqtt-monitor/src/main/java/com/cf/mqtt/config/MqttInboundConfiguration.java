@@ -3,8 +3,6 @@ package com.cf.mqtt.config;
 import com.cf.mqtt.handler.MqttMessageHandlerManager;
 import lombok.extern.slf4j.Slf4j;
 import org.eclipse.paho.client.mqttv3.MqttConnectOptions;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -30,7 +28,6 @@ import org.springframework.messaging.MessagingException;
 @Configuration
 @IntegrationComponentScan // basePackages 属性：指定需要扫描的包路径。如果未指定，默认会扫描当前类所在包及其子包
 public class MqttInboundConfiguration {
-    private static Logger LOGGER = LoggerFactory.getLogger(MqttInboundConfiguration.class);
 
     @Autowired
     private MqttConfiguration mqttProperties;
@@ -49,13 +46,47 @@ public class MqttInboundConfiguration {
     public MqttPahoClientFactory mqttInClient() {
         log.info("==>Init MQTT MqttPahoClientFactory...");
         DefaultMqttPahoClientFactory factory = new DefaultMqttPahoClientFactory();
+        
+        // 空值检查
+        if (mqttProperties.getUrl() == null || mqttProperties.getUrl().trim().isEmpty()) {
+            throw new IllegalStateException("MQTT URL cannot be null or empty");
+        }
+        if (mqttProperties.getClientId() == null || mqttProperties.getClientId().trim().isEmpty()) {
+            throw new IllegalStateException("MQTT ClientId cannot be null or empty");
+        }
+        
         String[] mqttServerUrls = mqttProperties.getUrl().split(",");
         MqttConnectOptions options = new MqttConnectOptions();
         options.setServerURIs(mqttServerUrls);
 
-        options.setUserName(mqttProperties.getUsername());
-        options.setPassword(mqttProperties.getPassword().toCharArray());
-        options.setKeepAliveInterval(2);
+        if (mqttProperties.getUsername() != null) {
+            options.setUserName(mqttProperties.getUsername());
+        }
+        if (mqttProperties.getPassword() != null) {
+            options.setPassword(mqttProperties.getPassword().toCharArray());
+        }
+        
+        // 使用配置的 keepalive，如果未配置则使用默认值 60
+        int keepAliveInterval = 60;
+        if (mqttProperties.getKeepalive() != null && !mqttProperties.getKeepalive().trim().isEmpty()) {
+            try {
+                keepAliveInterval = Integer.parseInt(mqttProperties.getKeepalive().trim());
+            } catch (NumberFormatException e) {
+                log.warn("Invalid keepalive value: {}, using default 60", mqttProperties.getKeepalive());
+            }
+        }
+        options.setKeepAliveInterval(keepAliveInterval);
+        
+        // 使用配置的 timeout，如果未配置则使用默认值 30
+        int connectionTimeout = 30;
+        if (mqttProperties.getTimeout() != null && !mqttProperties.getTimeout().trim().isEmpty()) {
+            try {
+                connectionTimeout = Integer.parseInt(mqttProperties.getTimeout().trim());
+            } catch (NumberFormatException e) {
+                log.warn("Invalid timeout value: {}, using default 30", mqttProperties.getTimeout());
+            }
+        }
+        options.setConnectionTimeout(connectionTimeout);
 
         //接受离线消息
         options.setCleanSession(false);
@@ -71,6 +102,9 @@ public class MqttInboundConfiguration {
     //  如果我要配置多个client，应该怎么处理呢？这个也简单, 模仿此方法，多写几个client
     @Bean
     public MessageProducer inbound() {
+        if (mqttProperties.getReceiveTopics() == null || mqttProperties.getReceiveTopics().trim().isEmpty()) {
+            throw new IllegalStateException("MQTT receiveTopics cannot be null or empty");
+        }
         String[] inboundTopics = mqttProperties.getReceiveTopics().split(",");
         MqttPahoMessageDrivenChannelAdapter adapter = new MqttPahoMessageDrivenChannelAdapter(mqttProperties.getClientId() + "_inbound",
                 mqttInClient(), inboundTopics);

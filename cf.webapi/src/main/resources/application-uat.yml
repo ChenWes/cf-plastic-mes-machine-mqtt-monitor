@@ -187,14 +187,14 @@ xxl:
       ### 执行器端口号 [选填]：小于等于0则自动获取；默认端口为9999，单机部署多个执行器时，注意要配置不同执行器端口；
       port: ${XXL_JOB_EXECUTOR_PORT:9999}
 
-wms:
+cf-monitor:
   mqtt:
     #这里要写 tcp://  不能是 mqtt,不然不是合法的 schema，源码中有
-    url: ${WMS_MQTT_URL:tcp://10.8.0.13:1883}
-    clientId: ${WMS_MQTT_CLIENTID:cfwms-mqtt-monitor}
+    url: ${CF_MONITOR_MQTT_URL:tcp://10.8.0.13:1883}
+    clientId: ${CF_MONITOR_MQTT_CLIENTID:cf-plastic-mes-machine-mqtt-monitor}
     # Web Publish msg to iot device, iot device need to subscribe this topic
-    receiveTopics: ${WMS_MQTT_RECEIVE_TOPICS:/estation/90A9F7300200/+,gateway/device/+/+/+}
-    username: ${WMS_MQTT_USERNAME:}
-    password: ${WMS_MQTT_PASSWORD:}
-    timeout: ${WMS_MQTT_TIMEOUT:10}
-    keepalive: ${WMS_MQTT_KEEPALIVE:20}
+    receiveTopics: ${CF_MONITOR_MQTT_RECEIVE_TOPICS:gateway/device/+/+/+}
+    username: ${CF_MONITOR_MQTT_USERNAME:}
+    password: ${CF_MONITOR_MQTT_PASSWORD:}
+    timeout: ${CF_MONITOR_MQTT_TIMEOUT:10}
+    keepalive: ${CF_MONITOR_MQTT_KEEPALIVE:20}

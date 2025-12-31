@@ -5,10 +5,11 @@ import org.springframework.context.annotation.Configuration;
 
 /**
  * MQTT 客户端连接的基本配置，配置信息见 application.yml
+ * 注意：配置前缀为 cf-monitor.mqtt（历史遗留，保持兼容性）
  * Create By Spring-2022/10/29
  */
 @Configuration
-@ConfigurationProperties(prefix = "wms.mqtt")
+@ConfigurationProperties(prefix = "cf-monitor.mqtt")
 public class MqttConfiguration {
     private String url;
     private String clientId;

@@ -57,8 +57,7 @@ public class MqttMessageHandlerManager {
         for (MqttMessageHandler handler : HANDLERS) {
             String topic = handler.topic();
             Pattern pattern = PatternCache.getPattern(topic);
-            boolean matches = pattern.matcher(receivedTopic).matches();
-            if (pattern != null && matches) {
+            if (pattern != null && pattern.matcher(receivedTopic).matches()) {
                 messageHandler = handler;
                 break;
             }
