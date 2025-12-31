@@ -8,7 +8,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.integration.annotation.IntegrationComponentScan;
 import org.springframework.integration.annotation.ServiceActivator;
-import org.springframework.integration.channel.DirectChannel;
+import org.springframework.integration.channel.ExecutorChannel;
 import org.springframework.integration.core.MessageProducer;
 import org.springframework.integration.mqtt.core.DefaultMqttPahoClientFactory;
 import org.springframework.integration.mqtt.core.MqttPahoClientFactory;
@@ -18,6 +18,9 @@ import org.springframework.messaging.Message;
 import org.springframework.messaging.MessageChannel;
 import org.springframework.messaging.MessageHandler;
 import org.springframework.messaging.MessagingException;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
+
+import java.util.concurrent.ThreadPoolExecutor;
 
 /**
  * 实现了对 inboundtopic 中的主题监听，当有消息推送到 inboundtopic 主题上时可以接受
@@ -35,10 +38,42 @@ public class MqttInboundConfiguration {
     @Autowired
     private MqttMessageHandlerManager mqttMessageHandlerManager;
 
+    /**
+     * MQTT 消息处理线程池
+     * 用于异步处理 MQTT 消息，避免阻塞消息接收
+     */
+    @Bean(name = "mqttMessageExecutor")
+    public ThreadPoolTaskExecutor mqttMessageExecutor() {
+        ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
+        // 核心线程数：根据消息处理量调整，默认 10
+        executor.setCorePoolSize(10);
+        // 最大线程数：处理突发消息，默认 50
+        executor.setMaxPoolSize(50);
+        // 队列容量：缓冲消息，默认 200
+        executor.setQueueCapacity(200);
+        // 线程空闲时间：300秒
+        executor.setKeepAliveSeconds(300);
+        // 线程名前缀
+        executor.setThreadNamePrefix("mqtt-message-");
+        // 拒绝策略：调用者运行策略，确保消息不丢失
+        executor.setRejectedExecutionHandler(new ThreadPoolExecutor.CallerRunsPolicy());
+        // 等待所有任务结束后再关闭线程池
+        executor.setWaitForTasksToCompleteOnShutdown(true);
+        // 等待时间：60秒
+        executor.setAwaitTerminationSeconds(60);
+        executor.initialize();
+        log.info("==>Init MQTT message executor thread pool: corePoolSize=10, maxPoolSize=50, queueCapacity=200");
+        return executor;
+    }
+
+    /**
+     * MQTT 输入通道
+     * 使用 ExecutorChannel 实现异步消息处理，避免阻塞 MQTT 消息接收线程
+     */
     @Bean
     public MessageChannel mqttInputChannel() {
-        log.info("==>Init MQTT input channel...");
-        return new DirectChannel();
+        log.info("==>Init MQTT input channel with ExecutorChannel for async processing...");
+        return new ExecutorChannel(mqttMessageExecutor());
     }
 
 
