@@ -1,12 +1,23 @@
-package com.cf.mqtt.handler;
+package com.cf.mes.mqtt.handler;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
+import com.cf.common.constant.JobOrderStatusConstants;
 import com.cf.common.constant.RedisConst;
+import com.cf.common.constant.WebSocketConstants;
 import com.cf.common.core.redis.RedisCache;
-import com.cf.mqtt.entity.machine.DryingMachinePayload;
+import com.cf.mes.common.WebSocketPublishService;
+import com.cf.mes.controller.response.MouldTemperatureMachineParamsVo;
+import com.cf.mes.domain.ProductionTask;
+import com.cf.mes.domain.ProductionTaskMtc;
+import com.cf.mes.domain.dto.MouldTemperatureMachineParams;
+import com.cf.mes.service.IMachineParamService;
+import com.cf.mes.service.IProductionTaskMtcService;
+import com.cf.mes.service.IProductionTaskService;
 import com.cf.mqtt.entity.machine.MoldTemperatureMachinePayload;
+import com.cf.mqtt.handler.MqttMessageHandler;
 import lombok.extern.slf4j.Slf4j;
+import org.jetbrains.annotations.Nullable;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.integration.mqtt.support.MqttHeaders;
 import org.springframework.messaging.Message;
@@ -14,7 +25,9 @@ import org.springframework.messaging.MessageHeaders;
 import org.springframework.messaging.MessagingException;
 import org.springframework.stereotype.Component;
 
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 import java.util.UUID;
 
 /**
@@ -30,9 +43,23 @@ public class MoldTemperatureMachineMessageHandler implements MqttMessageHandler 
     @Autowired
     private RedisCache redisCache;
 
+    @Autowired
+    private WebSocketPublishService webSocketPublishService;
+
+
+    @Autowired
+    private IProductionTaskService productionTaskService;
+
+    @Autowired
+    private IProductionTaskMtcService productionTaskMtcService;
+
+    @Autowired
+    private IMachineParamService machineParamService;
+
+
     @Override
     public String topic() {
-        return "^gateway/device/mould_temperature_machine_[^/]+/data/[^/]+$";
+        return "^gateway/device/mold_temperature_machine/[^/]+/data/[^/]+$";
     }
 
     @Override
@@ -52,15 +79,53 @@ public class MoldTemperatureMachineMessageHandler implements MqttMessageHandler 
                 log.warn("Failed to parse MoldTemperatureMachine from payload: {}", payload);
                 return;
             }
-
             // 1. 缓存数据
             updateRedisCache(machinePayload);
-            // 2. 下发通知
+
+            // 获取机器编号
+            String machineCode = getMachineCode(machinePayload.getDeviceId());
+            if (machineCode == null) {
+                return;
+            }
+            // 获取生产中的模温机
+            ProductionTaskMtc taskMtc = productionTaskMtcService.getProducingMouldTemperatureMachine(machineCode);
+            if (taskMtc == null) {
+                log.info("==>MoldTemperatureMachineMessageHandler.handleMessage: Can not find Producing MTC for machine : {}", machineCode);
+                return;
+            }
+            // 获取生产任务
+            ProductionTask productionTask = productionTaskService.getProductionTaskById(taskMtc.getTaskId());
+            if (productionTask == null || !productionTask.getTaskStatus().equals(JobOrderStatusConstants.JOB_ORDER_STATUS_PRODUCING)) {
+                log.info("==>MoldTemperatureMachineMessageHandler.handleMessage: Can not find Producing Task for machine : {}", machineCode);
+                return;
+            }
+            List<ProductionTaskMtc> taskMtcList = productionTaskMtcService.getProductionTaskMtcByTaskId(taskMtc.getTaskId());
+
+            // 2. 下发参数详情数据实时更新通知
+            sendMoldTemperatureMachineParams(productionTask.getMachineId(), taskMtcList);
+            // 3. 下发机边客户端首页告警消息
+            // sendMoldTemperatureMachineNotice();
+
 
         } catch (Exception e) {
             log.error("Error while handling moldTemperatureMachine message", e);
             throw new MessagingException("Failed to process moldTemperatureMachine message", e);
         }
+    }
+
+    private void sendMoldTemperatureMachineParams(Long machineId, List<ProductionTaskMtc> temperatureMachines) throws Exception {
+        // 封装响应结果
+        List<MouldTemperatureMachineParamsVo> machineParamsVos = new ArrayList<>();
+        for (ProductionTaskMtc mtc : temperatureMachines) {
+            MouldTemperatureMachineParamsVo paramsVo = new MouldTemperatureMachineParamsVo();
+            paramsVo.setMachineId(machineId);
+            paramsVo.setSettingId(mtc.getSettingsId());
+            MouldTemperatureMachineParams mouldTemperatureMachineParams = machineParamService.getMouldTemperatureMachineParams(mtc.getSupportMachineId(), mtc.getSupportMachineCode());
+            paramsVo.setParams(mouldTemperatureMachineParams);
+            machineParamsVos.add(paramsVo);
+        }
+        String channelId = WebSocketConstants.PLASTIC_MTC_PARAMS + machineId;
+        webSocketPublishService.publish(channelId, machineParamsVos);
     }
 
     /**
@@ -93,12 +158,10 @@ public class MoldTemperatureMachineMessageHandler implements MqttMessageHandler 
             log.warn("DeviceId is null or empty, cannot update cache");
             return;
         }
-        int lastUnderscoreIndex = deviceId.lastIndexOf("_");
-        if (lastUnderscoreIndex == -1 || lastUnderscoreIndex >= deviceId.length() - 1) {
-            log.warn("Invalid deviceId format: {}, cannot extract machineCode", deviceId);
+        String machineCode = getMachineCode(deviceId);
+        if (machineCode == null) {
             return;
         }
-        String machineCode = deviceId.substring(lastUnderscoreIndex + 1);
         String key = RedisConst.MOULD_TEMPERATURE_MACHINE_PARAM_HASH_KEY + machineCode;
         String cacheMapValue = redisCache.getCacheMapValue(key, paramName);
         if (cacheMapValue == null) {
@@ -111,5 +174,11 @@ public class MoldTemperatureMachineMessageHandler implements MqttMessageHandler 
             }
         }
     }
+
+    @Nullable
+    private String getMachineCode(String deviceId) {
+        return deviceId;
+    }
+
 
 }

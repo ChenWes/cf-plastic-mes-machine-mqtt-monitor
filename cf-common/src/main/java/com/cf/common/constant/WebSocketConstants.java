@@ -74,4 +74,10 @@ public class WebSocketConstants {
      */
     public static final String QC_DASHBOARD_NOTICE = "QC_DASHBOARD_NOTICE" + WEB_SOCKET_CONNECT_LINE;
 
+
+    /**
+     * 机边客户端-辅机参数-模温机参数详情 实时更新监听频道
+     */
+    public static final String PLASTIC_MTC_PARAMS = "PLASTIC_MTC_PARAMS" + WEB_SOCKET_CONNECT_LINE;
+
 }

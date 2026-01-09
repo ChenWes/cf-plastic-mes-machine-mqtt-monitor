@@ -193,7 +193,7 @@ cf-monitor:
     url: ${CF_MONITOR_MQTT_URL:tcp://10.8.0.13:1883}
     clientId: ${CF_MONITOR_MQTT_CLIENTID:cf-plastic-mes-machine-mqtt-monitor}
     # Web Publish msg to iot device, iot device need to subscribe this topic
-    receiveTopics: ${CF_MONITOR_MQTT_RECEIVE_TOPICS:gateway/device/+/+/+}
+    receiveTopics: ${CF_MONITOR_MQTT_RECEIVE_TOPICS:gateway/device/#}
     username: ${CF_MONITOR_MQTT_USERNAME:}
     password: ${CF_MONITOR_MQTT_PASSWORD:}
     timeout: ${CF_MONITOR_MQTT_TIMEOUT:10}

@@ -1,0 +1,179 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.cf.mes.mapper.ProductionTaskMtcMapper">
+
+    <resultMap type="ProductionTaskMtc" id="ProductionTaskMtcResult">
+        <result property="id"    column="id"    />
+        <result property="taskId"    column="task_id"    />
+        <result property="settingsId"    column="settings_id"    />
+        <result property="supportMachineId"    column="support_machine_id"    />
+        <result property="supportMachineCode"    column="support_machine_code"    />
+        <result property="remark"    column="remark"    />
+        <result property="employeeId"    column="employee_id"    />
+        <result property="employeeCode"    column="employee_code"    />
+        <result property="bindFlag"    column="bind_flag"    />
+        <result property="createBy"    column="create_by"    />
+        <result property="createTime"    column="create_time"    />
+        <result property="updateBy"    column="update_by"    />
+        <result property="updateTime"    column="update_time"    />
+    </resultMap>
+
+    <sql id="getProductionTaskMtcVo">
+        select id, task_id, settings_id, support_machine_id, support_machine_code, remark, employee_id, employee_code, bind_flag, create_by, create_time, update_by, update_time from production_task_mtc
+    </sql>
+
+    <select id="getProductionTaskMtcList" parameterType="ProductionTaskMtc" resultMap="ProductionTaskMtcResult">
+        <include refid="getProductionTaskMtcVo"/>
+        <where>
+            <if test="taskId != null "> and task_id = #{taskId}</if>
+            <if test="settingsId != null "> and settings_id = #{settingsId}</if>
+            <if test="supportMachineId != null "> and support_machine_id = #{supportMachineId}</if>
+            <if test="supportMachineCode != null  and supportMachineCode != ''"> and support_machine_code = #{supportMachineCode}</if>
+            <if test="employeeId != null "> and employee_id = #{employeeId}</if>
+            <if test="employeeCode != null  and employeeCode != ''"> and employee_code = #{employeeCode}</if>
+            <if test="bindFlag != null "> and bind_flag = #{bindFlag}</if>
+        </where>
+    </select>
+
+    <select id="getProductionTaskMtcListByIds" resultMap="ProductionTaskMtcResult">
+        <include refid="getProductionTaskMtcVo"/>
+        where id in
+        <foreach item="id" collection="list" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </select>
+
+    <select id="getProductionTaskMtcById" parameterType="Long" resultMap="ProductionTaskMtcResult">
+        <include refid="getProductionTaskMtcVo"/>
+        where id = #{id}
+    </select>
+
+    <insert id="insertProductionTaskMtc" parameterType="ProductionTaskMtc" useGeneratedKeys="true" keyProperty="id">
+        insert into production_task_mtc
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="taskId != null">task_id,</if>
+            <if test="settingsId != null">settings_id,</if>
+            <if test="supportMachineId != null">support_machine_id,</if>
+            <if test="supportMachineCode != null and supportMachineCode != ''">support_machine_code,</if>
+            <if test="remark != null">remark,</if>
+            <if test="employeeId != null">employee_id,</if>
+            <if test="employeeCode != null">employee_code,</if>
+            <if test="bindFlag != null">bind_flag,</if>
+            <if test="createBy != null">create_by,</if>
+            <if test="createTime != null">create_time,</if>
+            <if test="updateBy != null">update_by,</if>
+            <if test="updateTime != null">update_time,</if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="taskId != null">#{taskId},</if>
+            <if test="settingsId != null">#{settingsId},</if>
+            <if test="supportMachineId != null">#{supportMachineId},</if>
+            <if test="supportMachineCode != null and supportMachineCode != ''">#{supportMachineCode},</if>
+            <if test="remark != null">#{remark},</if>
+            <if test="employeeId != null">#{employeeId},</if>
+            <if test="employeeCode != null">#{employeeCode},</if>
+            <if test="bindFlag != null">#{bindFlag},</if>
+            <if test="createBy != null">#{createBy},</if>
+            <if test="createTime != null">#{createTime},</if>
+            <if test="updateBy != null">#{updateBy},</if>
+            <if test="updateTime != null">#{updateTime},</if>
+        </trim>
+    </insert>
+
+    <update id="updateProductionTaskMtc" parameterType="ProductionTaskMtc">
+        update production_task_mtc
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="taskId != null">task_id = #{taskId},</if>
+            <if test="settingsId != null">settings_id = #{settingsId},</if>
+            <if test="supportMachineId != null">support_machine_id = #{supportMachineId},</if>
+            <if test="supportMachineCode != null and supportMachineCode != ''">support_machine_code = #{supportMachineCode},</if>
+            <if test="remark != null">remark = #{remark},</if>
+            <if test="employeeId != null">employee_id = #{employeeId},</if>
+            <if test="employeeCode != null">employee_code = #{employeeCode},</if>
+            <if test="bindFlag != null">bind_flag = #{bindFlag},</if>
+            <if test="createBy != null">create_by = #{createBy},</if>
+            <if test="createTime != null">create_time = #{createTime},</if>
+            <if test="updateBy != null">update_by = #{updateBy},</if>
+            <if test="updateTime != null">update_time = #{updateTime},</if>
+        </trim>
+        where id = #{id}
+    </update>
+
+    <delete id="deleteProductionTaskMtcById" parameterType="Long">
+        delete from production_task_mtc where id = #{id}
+    </delete>
+
+    <delete id="deleteProductionTaskMtcByIds" parameterType="String">
+        delete from production_task_mtc where id in
+        <foreach item="id" collection="array" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </delete>
+
+    <select id="getProducingMouldTemperatureMachineList" resultMap="ProductionTaskMtcResult">
+        SELECT
+            mtc.*
+            FROM
+            production_task task
+            INNER JOIN production_task_mtc mtc ON task.id = mtc.task_id
+        WHERE
+        task.task_status = 'Producing' AND mtc.bind_flag = 1
+    </select>
+
+    <select id="getProducingMouldTemperatureMachines" resultMap="ProductionTaskMtcResult">
+        SELECT
+            mtc.*
+        FROM
+            production_task task
+                INNER JOIN production_task_mtc mtc ON task.id = mtc.task_id
+        WHERE
+            task.task_status = 'Producing'
+            AND mtc.bind_flag = 1
+            <if test="supportMachineCodes != null and supportMachineCodes.size() > 0">
+                AND support_machine_code IN
+                <foreach item="supportMachineCode" collection="supportMachineCodes" open="(" separator="," close=")">
+                    #{supportMachineCode}
+                </foreach>
+            </if>
+            <if test="supportMachineIds != null and supportMachineIds.size() > 0">
+                AND support_machine_id IN
+                <foreach item="supportMachineId" collection="supportMachineIds" open="(" separator="," close=")">
+                    #{supportMachineId}
+                </foreach>
+            </if>
+    </select>
+
+    <update id="unbindProductionTaskMtcs">
+        update production_task_mtc SET bind_flag = 0, update_time = now()
+        where
+            task_id = #{taskId}
+            <if test="idList != null and idList.size() > 0">
+                AND id IN
+                <foreach item="id" collection="idList" open="(" separator="," close=")">
+                    #{id}
+                </foreach>
+            </if>
+    </update>
+
+    <select id="getProducingMouldTemperatureMachine" resultMap="ProductionTaskMtcResult">
+        SELECT
+            mtc.id,
+            mtc.task_id,
+            mtc.settings_id,
+            mtc.support_machine_id,
+            mtc.support_machine_code,
+            mtc.remark,
+            mtc.employee_id,
+            mtc.employee_code,
+            mtc.bind_flag
+        FROM
+            production_task task
+                INNER JOIN production_task_mtc mtc ON task.id = mtc.task_id
+        WHERE
+            task.task_status = 'Producing'
+          AND mtc.bind_flag = 1
+          AND support_machine_code = #{machineCode}
+    </select>
+</mapper>

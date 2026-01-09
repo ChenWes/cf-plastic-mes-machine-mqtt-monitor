@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.cf.mes.mapper.ProductionTaskMapper">
+    
+    <resultMap type="ProductionTask" id="ProductionTaskResult">
+        <result property="id"    column="id"    />
+        <result property="batchNo"    column="batch_no"    />
+        <result property="machineId"    column="machine_id"    />
+        <result property="taskStatus"    column="task_status"    />
+        <result property="startDate"    column="start_date"    />
+        <result property="endDate"    column="end_date"    />
+        <result property="remark"    column="remark"    />
+        <result property="createBy"    column="create_by"    />
+        <result property="createTime"    column="create_time"    />
+        <result property="updateBy"    column="update_by"    />
+        <result property="updateTime"    column="update_time"    />
+    </resultMap>
+
+    <sql id="getProductionTaskVo">
+        select id, batch_no, machine_id, task_status, start_date, end_date, remark, create_by, create_time, update_by, update_time from production_task
+    </sql>
+
+    <select id="getProductionTaskList" parameterType="ProductionTask" resultMap="ProductionTaskResult">
+        <include refid="getProductionTaskVo"/>
+        <where>  
+            <if test="batchNo != null  and batchNo != ''"> and batch_no = #{batchNo}</if>
+            <if test="machineId != null "> and machine_id = #{machineId}</if>
+            <if test="taskStatus != null  and taskStatus != ''"> and task_status = #{taskStatus}</if>
+            <if test="startDate != null "> and start_date = #{startDate}</if>
+            <if test="endDate != null "> and end_date = #{endDate}</if>
+        </where>
+    </select>
+
+    <select id="getProductionTaskListByIds" resultMap="ProductionTaskResult">
+        <include refid="getProductionTaskVo"/>
+        where id in
+        <foreach item="id" collection="list" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </select>
+    
+    <select id="getProductionTaskById" parameterType="Long" resultMap="ProductionTaskResult">
+        <include refid="getProductionTaskVo"/>
+        where id = #{id}
+    </select>
+        
+    <insert id="insertProductionTask" parameterType="ProductionTask" useGeneratedKeys="true" keyProperty="id">
+        insert into production_task
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="batchNo != null and batchNo != ''">batch_no,</if>
+            <if test="machineId != null">machine_id,</if>
+            <if test="taskStatus != null">task_status,</if>
+            <if test="startDate != null">start_date,</if>
+            <if test="endDate != null">end_date,</if>
+            <if test="remark != null">remark,</if>
+            <if test="createBy != null">create_by,</if>
+            <if test="createTime != null">create_time,</if>
+            <if test="updateBy != null">update_by,</if>
+            <if test="updateTime != null">update_time,</if>
+         </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="batchNo != null and batchNo != ''">#{batchNo},</if>
+            <if test="machineId != null">#{machineId},</if>
+            <if test="taskStatus != null">#{taskStatus},</if>
+            <if test="startDate != null">#{startDate},</if>
+            <if test="endDate != null">#{endDate},</if>
+            <if test="remark != null">#{remark},</if>
+            <if test="createBy != null">#{createBy},</if>
+            <if test="createTime != null">#{createTime},</if>
+            <if test="updateBy != null">#{updateBy},</if>
+            <if test="updateTime != null">#{updateTime},</if>
+         </trim>
+    </insert>
+
+    <update id="updateProductionTask" parameterType="ProductionTask">
+        update production_task
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="batchNo != null and batchNo != ''">batch_no = #{batchNo},</if>
+            <if test="machineId != null">machine_id = #{machineId},</if>
+            <if test="taskStatus != null">task_status = #{taskStatus},</if>
+            <if test="startDate != null">start_date = #{startDate},</if>
+            <if test="endDate != null">end_date = #{endDate},</if>
+            <if test="remark != null">remark = #{remark},</if>
+            <if test="createBy != null">create_by = #{createBy},</if>
+            <if test="createTime != null">create_time = #{createTime},</if>
+            <if test="updateBy != null">update_by = #{updateBy},</if>
+            <if test="updateTime != null">update_time = #{updateTime},</if>
+        </trim>
+        where id = #{id}
+    </update>
+
+    <delete id="deleteProductionTaskById" parameterType="Long">
+        delete from production_task where id = #{id}
+    </delete>
+
+    <delete id="deleteProductionTaskByIds" parameterType="String">
+        delete from production_task where id in 
+        <foreach item="id" collection="array" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </delete>
+</mapper>
