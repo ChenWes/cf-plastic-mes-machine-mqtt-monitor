@@ -3,12 +3,14 @@
 PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
 "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.cf.mes.mapper.ProductionTaskMapper">
-    
+
     <resultMap type="ProductionTask" id="ProductionTaskResult">
         <result property="id"    column="id"    />
         <result property="batchNo"    column="batch_no"    />
         <result property="machineId"    column="machine_id"    />
         <result property="taskStatus"    column="task_status"    />
+        <result property="mouldCode"    column="mould_code"    />
+        <result property="jobOrderIds"    column="job_order_ids"    />
         <result property="startDate"    column="start_date"    />
         <result property="endDate"    column="end_date"    />
         <result property="remark"    column="remark"    />
@@ -19,15 +21,17 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
     </resultMap>
 
     <sql id="getProductionTaskVo">
-        select id, batch_no, machine_id, task_status, start_date, end_date, remark, create_by, create_time, update_by, update_time from production_task
+        select id, batch_no, machine_id, task_status, mould_code, job_order_ids, start_date, end_date, remark, create_by, create_time, update_by, update_time from production_task
     </sql>
 
     <select id="getProductionTaskList" parameterType="ProductionTask" resultMap="ProductionTaskResult">
         <include refid="getProductionTaskVo"/>
-        <where>  
+        <where>
             <if test="batchNo != null  and batchNo != ''"> and batch_no = #{batchNo}</if>
             <if test="machineId != null "> and machine_id = #{machineId}</if>
             <if test="taskStatus != null  and taskStatus != ''"> and task_status = #{taskStatus}</if>
+            <if test="mouldCode != null  and mouldCode != ''"> and mould_code = #{mouldCode}</if>
+            <if test="jobOrderIds != null  and jobOrderIds != ''"> and job_order_ids = #{jobOrderIds}</if>
             <if test="startDate != null "> and start_date = #{startDate}</if>
             <if test="endDate != null "> and end_date = #{endDate}</if>
         </where>
@@ -40,18 +44,20 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
             #{id}
         </foreach>
     </select>
-    
+
     <select id="getProductionTaskById" parameterType="Long" resultMap="ProductionTaskResult">
         <include refid="getProductionTaskVo"/>
         where id = #{id}
     </select>
-        
+
     <insert id="insertProductionTask" parameterType="ProductionTask" useGeneratedKeys="true" keyProperty="id">
         insert into production_task
         <trim prefix="(" suffix=")" suffixOverrides=",">
             <if test="batchNo != null and batchNo != ''">batch_no,</if>
             <if test="machineId != null">machine_id,</if>
             <if test="taskStatus != null">task_status,</if>
+            <if test="mouldCode != null">mould_code,</if>
+            <if test="jobOrderIds != null">job_order_ids,</if>
             <if test="startDate != null">start_date,</if>
             <if test="endDate != null">end_date,</if>
             <if test="remark != null">remark,</if>
@@ -59,11 +65,13 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
             <if test="createTime != null">create_time,</if>
             <if test="updateBy != null">update_by,</if>
             <if test="updateTime != null">update_time,</if>
-         </trim>
+        </trim>
         <trim prefix="values (" suffix=")" suffixOverrides=",">
             <if test="batchNo != null and batchNo != ''">#{batchNo},</if>
             <if test="machineId != null">#{machineId},</if>
             <if test="taskStatus != null">#{taskStatus},</if>
+            <if test="mouldCode != null">#{mouldCode},</if>
+            <if test="jobOrderIds != null">#{jobOrderIds},</if>
             <if test="startDate != null">#{startDate},</if>
             <if test="endDate != null">#{endDate},</if>
             <if test="remark != null">#{remark},</if>
@@ -71,7 +79,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
             <if test="createTime != null">#{createTime},</if>
             <if test="updateBy != null">#{updateBy},</if>
             <if test="updateTime != null">#{updateTime},</if>
-         </trim>
+        </trim>
     </insert>
 
     <update id="updateProductionTask" parameterType="ProductionTask">
@@ -80,6 +88,8 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
             <if test="batchNo != null and batchNo != ''">batch_no = #{batchNo},</if>
             <if test="machineId != null">machine_id = #{machineId},</if>
             <if test="taskStatus != null">task_status = #{taskStatus},</if>
+            <if test="mouldCode != null">mould_code = #{mouldCode},</if>
+            <if test="jobOrderIds != null">job_order_ids = #{jobOrderIds},</if>
             <if test="startDate != null">start_date = #{startDate},</if>
             <if test="endDate != null">end_date = #{endDate},</if>
             <if test="remark != null">remark = #{remark},</if>
@@ -96,7 +106,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
     </delete>
 
     <delete id="deleteProductionTaskByIds" parameterType="String">
-        delete from production_task where id in 
+        delete from production_task where id in
         <foreach item="id" collection="array" open="(" separator="," close=")">
             #{id}
         </foreach>

@@ -1,0 +1,115 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.cf.mes.mapper.MouldTemperatureSettingsMapper">
+
+    <resultMap type="MouldTemperatureSettings" id="MouldTemperatureSettingsResult">
+        <result property="settingsId"    column="settings_id"    />
+        <result property="mouldId"    column="mould_id"    />
+        <result property="mouldCode"    column="mould_code"    />
+        <result property="partType"    column="part_type"    />
+        <result property="position"    column="position"    />
+        <result property="positionName"    column="position_name"    />
+        <result property="minTemperature"    column="min_temperature"    />
+        <result property="maxTemperature"    column="max_temperature"    />
+        <result property="remark"    column="remark"    />
+        <result property="createBy"    column="create_by"    />
+        <result property="createTime"    column="create_time"    />
+        <result property="updateBy"    column="update_by"    />
+        <result property="updateTime"    column="update_time"    />
+    </resultMap>
+
+    <sql id="getMouldTemperatureSettingsVo">
+        select settings_id, mould_id, mould_code, part_type, position, position_name, min_temperature, max_temperature, remark, create_by, create_time, update_by, update_time from mould_temperature_settings
+    </sql>
+
+    <select id="getMouldTemperatureSettingsList" parameterType="MouldTemperatureSettings" resultMap="MouldTemperatureSettingsResult">
+        <include refid="getMouldTemperatureSettingsVo"/>
+        <where>
+            <if test="mouldId != null "> and mould_id = #{mouldId}</if>
+            <if test="mouldCode != null  and mouldCode != ''"> and mould_code = #{mouldCode}</if>
+            <if test="partType != null  and partType != ''"> and part_type = #{partType}</if>
+            <if test="position != null  and position != ''"> and position = #{position}</if>
+            <if test="positionName != null  and positionName != ''"> and position_name like concat('%', #{positionName}, '%')</if>
+            <if test="minTemperature != null "> and min_temperature = #{minTemperature}</if>
+            <if test="maxTemperature != null "> and max_temperature = #{maxTemperature}</if>
+        </where>
+    </select>
+
+    <select id="getMouldTemperatureSettingsListBySettingsIds" resultMap="MouldTemperatureSettingsResult">
+        <include refid="getMouldTemperatureSettingsVo"/>
+        where settings_id in
+        <foreach item="settingsId" collection="list" open="(" separator="," close=")">
+            #{settingsId}
+        </foreach>
+    </select>
+
+    <select id="getMouldTemperatureSettingsBySettingsId" parameterType="Long" resultMap="MouldTemperatureSettingsResult">
+        <include refid="getMouldTemperatureSettingsVo"/>
+        where settings_id = #{settingsId}
+    </select>
+
+    <insert id="insertMouldTemperatureSettings" parameterType="MouldTemperatureSettings" useGeneratedKeys="true" keyProperty="settingsId">
+        insert into mould_temperature_settings
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="mouldId != null">mould_id,</if>
+            <if test="mouldCode != null and mouldCode != ''">mould_code,</if>
+            <if test="partType != null and partType != ''">part_type,</if>
+            <if test="position != null and position != ''">position,</if>
+            <if test="positionName != null">position_name,</if>
+            <if test="minTemperature != null">min_temperature,</if>
+            <if test="maxTemperature != null">max_temperature,</if>
+            <if test="remark != null">remark,</if>
+            <if test="createBy != null">create_by,</if>
+            <if test="createTime != null">create_time,</if>
+            <if test="updateBy != null">update_by,</if>
+            <if test="updateTime != null">update_time,</if>
+         </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="mouldId != null">#{mouldId},</if>
+            <if test="mouldCode != null and mouldCode != ''">#{mouldCode},</if>
+            <if test="partType != null and partType != ''">#{partType},</if>
+            <if test="position != null and position != ''">#{position},</if>
+            <if test="positionName != null">#{positionName},</if>
+            <if test="minTemperature != null">#{minTemperature},</if>
+            <if test="maxTemperature != null">#{maxTemperature},</if>
+            <if test="remark != null">#{remark},</if>
+            <if test="createBy != null">#{createBy},</if>
+            <if test="createTime != null">#{createTime},</if>
+            <if test="updateBy != null">#{updateBy},</if>
+            <if test="updateTime != null">#{updateTime},</if>
+         </trim>
+    </insert>
+
+    <update id="updateMouldTemperatureSettings" parameterType="MouldTemperatureSettings">
+        update mould_temperature_settings
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="mouldId != null">mould_id = #{mouldId},</if>
+            <if test="mouldCode != null and mouldCode != ''">mould_code = #{mouldCode},</if>
+            <if test="partType != null and partType != ''">part_type = #{partType},</if>
+            <if test="position != null and position != ''">position = #{position},</if>
+            <if test="positionName != null">position_name = #{positionName},</if>
+            <if test="minTemperature != null">min_temperature = #{minTemperature},</if>
+            <if test="maxTemperature != null">max_temperature = #{maxTemperature},</if>
+            <if test="remark != null">remark = #{remark},</if>
+            <if test="createBy != null">create_by = #{createBy},</if>
+            <if test="createTime != null">create_time = #{createTime},</if>
+            <if test="updateBy != null">update_by = #{updateBy},</if>
+            <if test="updateTime != null">update_time = #{updateTime},</if>
+        </trim>
+        where settings_id = #{settingsId}
+    </update>
+
+    <delete id="deleteMouldTemperatureSettingsBySettingsId" parameterType="Long">
+        delete from mould_temperature_settings where settings_id = #{settingsId}
+    </delete>
+
+    <delete id="deleteMouldTemperatureSettingsBySettingsIds" parameterType="String">
+        delete from mould_temperature_settings where settings_id in
+        <foreach item="settingsId" collection="array" open="(" separator="," close=")">
+            #{settingsId}
+        </foreach>
+    </delete>
+
+</mapper>
