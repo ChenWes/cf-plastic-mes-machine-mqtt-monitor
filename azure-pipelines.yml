@@ -11,7 +11,7 @@ pool:
 
 
 variables:
-   imageName: '$(dockerRegistry)/cf-plastic-mes-machine-mqtt-monitor-new:$(build.BuildNumber)'
+   imageName: '$(dockerRegistry)/cf-plastic-mes-machine-mqtt-monitor:$(build.BuildNumber)'
 
 steps:
 - task: Maven@3
