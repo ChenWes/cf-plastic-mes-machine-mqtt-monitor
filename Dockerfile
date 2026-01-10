@@ -30,8 +30,7 @@ ENV TRUST_STORE_PASSWORD=""
 ENV JAVA_OPTS=""
 
 #公开端口
-EXPOSE 8081
-EXPOSE 9999
+EXPOSE 18081
 
 #设置启动命令
 # 增加Skywalking Java Agent

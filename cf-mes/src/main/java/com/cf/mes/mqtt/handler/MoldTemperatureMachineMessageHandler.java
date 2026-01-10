@@ -121,7 +121,7 @@ public class MoldTemperatureMachineMessageHandler implements MqttMessageHandler 
             paramsVo.setMachineId(machineId);
             paramsVo.setSettingId(mtc.getSettingsId());
             MouldTemperatureMachineParams mouldTemperatureMachineParams = machineParamService.getMouldTemperatureMachineParams(mtc.getSupportMachineId(), mtc.getSupportMachineCode());
-            paramsVo.setParams(mouldTemperatureMachineParams);
+            paramsVo.setMachineParams(mouldTemperatureMachineParams);
             machineParamsVos.add(paramsVo);
         }
         String channelId = WebSocketConstants.PLASTIC_MTC_PARAMS + machineId;

@@ -24,6 +24,6 @@ public class MouldTemperatureMachineParamsVo implements Serializable {
     /**
      * 模温机参数数据
      */
-    private MouldTemperatureMachineParams params;
+    private MouldTemperatureMachineParams machineParams;
 
 }

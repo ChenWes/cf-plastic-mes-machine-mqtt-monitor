@@ -6,11 +6,10 @@ services:
       context: .
       dockerfile: Dockerfile
     ports:
-      - "8081:8081"
-      - "9999:9999"
-    expose:
-      - 8081
-      - 9999
+      - "18081:18081"
+#    expose:
+#      - 8081
+#      - 9999
     #    deploy:
     #      resources:
     #        limits:
@@ -45,16 +44,11 @@ services:
       SKYWALKING_AGENT_SERVICE_NAME: MESAPI
       SKYWALKING_COLLECTOR_BACKEND_SERVICE: 10.8.0.13:11800
       #时区配置
-      USER_TIMEZONE: GMT+08
-      # XXL-JOB
-      XXL_JOB_ADMIN_ADDRESSES: http://10.8.0.13:8092/xxl-job-admin
-      # XXL_JOB_EXECUTOR_ADDRESS:
-      XXL_JOB_EXECUTOR_IP: 10.8.0.11
-      XXL_JOB_EXECUTOR_PORT: 9999
+      USER_TIMEZONE: GMT+07
       # MQTT 配置
-      CF_MONITOR_MQTT_URL: tcp://8.149.246.48:1883
-      CF_MONITOR_MQTT_CLIENTID: cfwms-mqtt-monitor
-      CF_MONITOR_MQTT_RECEIVE_TOPICS: gateway/device/+/+/+
+      CF_MONITOR_MQTT_URL: tcp://10.8.0.13:1883
+      CF_MONITOR_MQTT_CLIENTID: cf-plastic-mes-machine-mqtt-monitor
+      CF_MONITOR_MQTT_RECEIVE_TOPICS: gateway/device/#
       #CF_MONITOR_MQTT_USERNAME:
       #CF_MONITOR_MQTT_PASSWORD:
       CF_MONITOR_MQTT_TIMEOUT: 10
@@ -85,4 +79,4 @@ services:
         -Djava.security.egd=file:/dev/./urandom
 
     volumes:
-      - E:/github/cfmm/hotfix/cf-plastic-mes-machine-mqtt-monitor/server.jks:/app/ssl/server.jks
+      - E:/github/cfmm/cf-metal-mes-api/server.jks:/app/ssl/server.jks

@@ -1,10 +1,11 @@
-package com.cf.mqtt.handler;
+package com.cf.mes.mqtt.handler;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.cf.common.constant.RedisConst;
 import com.cf.common.core.redis.RedisCache;
 import com.cf.mqtt.entity.machine.DryingMachinePayload;
+import com.cf.mqtt.handler.MqttMessageHandler;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.integration.mqtt.support.MqttHeaders;
@@ -31,7 +32,7 @@ public class DryingMachineMessageHandler implements MqttMessageHandler {
 
     @Override
     public String topic() {
-        return "^gateway/device/drying_machine_[^/]+/data/[^/]+$";
+        return "^gateway/device/dryer/[^/]+/data/[^/]+$";
     }
 
     @Override
@@ -92,12 +93,7 @@ public class DryingMachineMessageHandler implements MqttMessageHandler {
             log.warn("DeviceId is null or empty, cannot update cache");
             return;
         }
-        int lastUnderscoreIndex = deviceId.lastIndexOf("_");
-        if (lastUnderscoreIndex == -1 || lastUnderscoreIndex >= deviceId.length() - 1) {
-            log.warn("Invalid deviceId format: {}, cannot extract machineCode", deviceId);
-            return;
-        }
-        String machineCode = deviceId.substring(lastUnderscoreIndex + 1);
+        String machineCode = deviceId;
         String key = RedisConst.DRYING_MACHINE_PARAM_HASH_KEY + machineCode;
         String cacheMapValue = redisCache.getCacheMapValue(key, paramName);
         if (cacheMapValue == null) {
