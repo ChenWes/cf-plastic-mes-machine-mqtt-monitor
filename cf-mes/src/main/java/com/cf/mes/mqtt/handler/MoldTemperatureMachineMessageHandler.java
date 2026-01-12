@@ -6,12 +6,14 @@ import com.cf.common.constant.JobOrderStatusConstants;
 import com.cf.common.constant.RedisConst;
 import com.cf.common.constant.WebSocketConstants;
 import com.cf.common.core.redis.RedisCache;
+import com.cf.common.core.ws.WebSocketMessage;
 import com.cf.mes.common.WebSocketPublishService;
 import com.cf.mes.controller.response.MouldTemperatureMachineParamsVo;
 import com.cf.mes.domain.MouldTemperatureSettings;
 import com.cf.mes.domain.ProductionTask;
 import com.cf.mes.domain.ProductionTaskMtc;
 import com.cf.mes.domain.dto.MouldTemperatureMachineParams;
+import com.cf.mes.mqtt.util.MachineParamMapUtil;
 import com.cf.mes.service.IMachineParamService;
 import com.cf.mes.service.IMouldTemperatureSettingsService;
 import com.cf.mes.service.IProductionTaskMtcService;
@@ -148,60 +150,88 @@ public class MoldTemperatureMachineMessageHandler implements MqttMessageHandler 
         webSocketPublishService.publish(channelId, mtcParamsVos);
     }
 
-    private void sendMoldTemperatureMachineNotice(Long machineId, List<MouldTemperatureSettings> mouldTemperatureSettings, List<MouldTemperatureMachineParamsVo> mtcParamsVos) throws Exception {
+    private void sendMoldTemperatureMachineNotice(Long machineId, List<MouldTemperatureSettings> mouldTemperatureSettings,
+                                                  List<MouldTemperatureMachineParamsVo> mtcParamsVos) throws Exception {
+
         if (CollectionUtils.isEmpty(mouldTemperatureSettings)) {
             return;
         }
-        Map<Long, MouldTemperatureSettings> settingsMap = mouldTemperatureSettings.stream().collect(Collectors.toMap(MouldTemperatureSettings::getSettingsId, Function.identity()));
+
+        Map<Long, MouldTemperatureSettings> settingsMap = mouldTemperatureSettings.stream()
+                .collect(Collectors.toMap(MouldTemperatureSettings::getSettingsId, Function.identity()));
+
         for (MouldTemperatureMachineParamsVo paramsVo : mtcParamsVos) {
             // 设定ID
             MouldTemperatureSettings settings = settingsMap.get(paramsVo.getSettingId());
             if (settings == null) {
                 continue;
             }
-            Map<String, Map<String, Object>> params = paramsVo.getMachineParams().getParams();
+            MouldTemperatureMachineParams machineParams = paramsVo.getMachineParams();
+            Map<String, Map<String, Object>> params = machineParams.getParams();
             // 获取出媒温度
             if (params == null || params.isEmpty()) {
                 continue;
             }
-
-            // 生产标准设定的范围
-            BigDecimal minTemperature = settings.getMinTemperature();
-            BigDecimal maxTemperature = settings.getMaxTemperature();
-
             // 模温机设定的温度范围
-            BigDecimal mtcMinTemperature = null;
-            Object lower_temperature_limit = getParamValue("set_lower_temperature_limit", "value", params);
-            if (lower_temperature_limit != null) {
-                mtcMinTemperature = new BigDecimal(String.valueOf(lower_temperature_limit));
-            }
-
-            BigDecimal mtcMaxTemperature = BigDecimal.ZERO;
-            Object upper_temperature_limit = getParamValue("set_upper_temperature_limit", "value", params);
-            if (upper_temperature_limit != null) {
-                mtcMaxTemperature = new BigDecimal(String.valueOf(upper_temperature_limit));
-            }
-
             // 出媒温度
-            BigDecimal currentTemperature = BigDecimal.ZERO;
-            Object medium_output_temperature = getParamValue("medium_output_temperature", "value", params);
-            if (medium_output_temperature != null) {
-                currentTemperature = new BigDecimal(String.valueOf(currentTemperature));
+            BigDecimal currentTemperature = MachineParamMapUtil.getBigDecimal(params, "medium_output_temperature", "value", null);
+            if (currentTemperature == null) {
+                log.warn("medium_output_temperature is empty!! machineId: {}, MTC: {}", machineId, machineParams.getSupportMachineCode());
             }
+            // 模温机设定的温度下限
+            BigDecimal mtcMinTemperature = MachineParamMapUtil.getBigDecimal(params, "set_lower_temperature_limit", "value", BigDecimal.ZERO);
+            // 模温机设定的温度上限
+            BigDecimal mtcMaxTemperature = MachineParamMapUtil.getBigDecimal(params, "set_upper_temperature_limit", "value", null);
 
             // 判断是否在设定配置的的范围中
-            boolean inSettingsTempRange = isValueInRange(currentTemperature, minTemperature, maxTemperature);
-            paramsVo.setInMachineTempRange(inSettingsTempRange);
+            boolean inSettingsTempRange = isValueInRange(currentTemperature, settings.getMinTemperature(), settings.getMaxTemperature());
+            paramsVo.setInSettingsTempRange(inSettingsTempRange);
 
             // 判断是否在机器设定的的范围中
-            boolean inMachineTempRange = isValueInRange(currentTemperature, mtcMinTemperature, mtcMaxTemperature);
-
-            paramsVo.setInMachineTempRange(inMachineTempRange);
-
+            if (mtcMaxTemperature != null) {
+                boolean inMachineTempRange = isValueInRange(currentTemperature, mtcMinTemperature, mtcMaxTemperature);
+                paramsVo.setInMachineTempRange(inMachineTempRange);
+            }
 
         }
-        String channelId = WebSocketConstants.PLASTIC_MTC_PARAMS + machineId;
-        webSocketPublishService.publish(channelId, mtcParamsVos);
+
+        WebSocketMessage webSocketMessage = getWebSocketMessage(mtcParamsVos);
+        String channelId = WebSocketConstants.MES_SUPPORT_MACHINE_NOTICE + machineId;
+        webSocketPublishService.publish(channelId, webSocketMessage);
+
+    }
+
+    /**
+     * 封装消息下发数据
+     *
+     * @param mtcParamsVos
+     * @return
+     */
+    private WebSocketMessage getWebSocketMessage(List<MouldTemperatureMachineParamsVo> mtcParamsVos) {
+
+        boolean outOfTemperatureLimit = false;
+        for (MouldTemperatureMachineParamsVo paramsVo : mtcParamsVos) {
+            Boolean inSettingsTempRange = paramsVo.getInSettingsTempRange();
+            Boolean inMachineTempRange = paramsVo.getInMachineTempRange();
+            if (Boolean.FALSE.equals(inSettingsTempRange)) {
+                outOfTemperatureLimit = true;
+                break;
+            }
+            if (inMachineTempRange != null && inMachineTempRange.equals(Boolean.FALSE)) {
+                outOfTemperatureLimit = true;
+                break;
+            }
+        }
+
+        Map<String, Object> data = new HashMap<>();
+        data.put("supportMachineType", "mold_temperature_machine");
+        data.put("outOfTemperatureLimit", outOfTemperatureLimit);
+
+        WebSocketMessage webSocketMsg = new WebSocketMessage();
+        webSocketMsg.setBizType("MES_SUPPORT_MACHINE_NOTICE");
+        webSocketMsg.setData(data);
+
+        return webSocketMsg;
     }
 
     private boolean isValueInRange(BigDecimal value, BigDecimal min, BigDecimal max) {
@@ -217,14 +247,6 @@ public class MoldTemperatureMachineMessageHandler implements MqttMessageHandler 
             return false;
         }
         return true;
-    }
-
-    private Object getParamValue(String paramName, String valueName, Map<String, Map<String, Object>> params) {
-        Map<String, Object> paramValueMap = params.get(paramName);
-        if (paramValueMap == null) {
-            return null;
-        }
-        return paramValueMap.get(valueName);
     }
 
     /**

@@ -40,11 +40,11 @@ public class MouldTemperatureMachineParamsVo implements Serializable {
     /*
      * 判断是否在设定配置的的范围中
      */
-    private boolean inSettingsTempRange;
+    private Boolean inSettingsTempRange;
 
     /**
      * 判断是否在机器设定的的范围中
      */
-    private boolean inMachineTempRange;
+    private Boolean inMachineTempRange;
 
 }
