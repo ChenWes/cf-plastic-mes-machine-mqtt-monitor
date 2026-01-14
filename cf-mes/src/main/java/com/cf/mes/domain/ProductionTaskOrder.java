@@ -1,5 +1,6 @@
 package com.cf.mes.domain;
 
+import com.alibaba.fastjson.annotation.JSONField;
 import com.cf.common.annotation.Excel;
 import com.cf.common.core.domain.BaseEntity;
 import com.fasterxml.jackson.annotation.JsonFormat;
@@ -46,7 +47,8 @@ public class ProductionTaskOrder extends BaseEntity
     private String orderCode;
 
     /** 加单时间 */
-    @JsonFormat(pattern="yyyy-MM-dd'T'HH:mm:ss'Z'")
+    @JSONField(format = "yyyy-MM-dd HH:mm:ss")
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     @Excel(name = "加单时间", width = 30, dateFormat = "yyyy-MM-dd")
     //@ApiModelProperty(value = "加单时间")
     private Date additionTime;

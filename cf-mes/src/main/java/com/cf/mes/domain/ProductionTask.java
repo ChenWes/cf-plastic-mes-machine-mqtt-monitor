@@ -1,6 +1,8 @@
 package com.cf.mes.domain;
 
 import java.util.Date;
+
+import com.alibaba.fastjson.annotation.JSONField;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 ///import com.fasterxml.jackson.databind.ser.std.ToStringSerializer;
@@ -54,13 +56,15 @@ public class ProductionTask extends BaseEntity
     private String jobOrderIds;
 
     /** 起工时间 */
-    @JsonFormat(pattern="yyyy-MM-dd'T'HH:mm:ss'Z'")
+    @JSONField(format = "yyyy-MM-dd HH:mm:ss")
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     @Excel(name = "起工时间", width = 30, dateFormat = "yyyy-MM-dd")
     //@ApiModelProperty(value = "起工时间")
     private Date startDate;
 
     /** 结束时间 */
-    @JsonFormat(pattern="yyyy-MM-dd'T'HH:mm:ss'Z'")
+    @JSONField(format = "yyyy-MM-dd HH:mm:ss")
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     @Excel(name = "结束时间", width = 30, dateFormat = "yyyy-MM-dd")
     //@ApiModelProperty(value = "结束时间")
     private Date endDate;

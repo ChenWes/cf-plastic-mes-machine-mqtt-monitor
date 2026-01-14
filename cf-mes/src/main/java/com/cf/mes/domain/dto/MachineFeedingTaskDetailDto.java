@@ -1,5 +1,6 @@
 package com.cf.mes.domain.dto;
 
+import com.alibaba.fastjson.annotation.JSONField;
 import com.cf.mes.domain.FeedingTaskOrderDetail;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Data;
@@ -14,7 +15,8 @@ public class MachineFeedingTaskDetailDto extends FeedingTaskOrderDetail {
     /**
      * 首次加料时间
      */
-    @JsonFormat(pattern="yyyy-MM-dd'T'HH:mm:ss'Z'")
+    @JSONField(format = "yyyy-MM-dd HH:mm:ss")
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private Date firstFeedingTime;
 
     /**

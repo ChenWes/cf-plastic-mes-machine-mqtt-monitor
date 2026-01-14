@@ -1,5 +1,6 @@
 package com.cf.mes.domain;
 
+import com.alibaba.fastjson.annotation.JSONField;
 import com.cf.common.annotation.Excel;
 import com.cf.common.core.domain.BaseEntity;
 import com.fasterxml.jackson.annotation.JsonFormat;
@@ -60,13 +61,15 @@ public class FeedingTask extends BaseEntity
     private String jobOrderIds;
 
     /** 开始时间 */
-    @JsonFormat(pattern="yyyy-MM-dd'T'HH:mm:ss'Z'")
+    @JSONField(format = "yyyy-MM-dd HH:mm:ss")
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     @Excel(name = "开始时间", width = 30, dateFormat = "yyyy-MM-dd")
     //@ApiModelProperty(value = "开始时间")
     private Date startDate;
 
     /** 结束时间 */
-    @JsonFormat(pattern="yyyy-MM-dd'T'HH:mm:ss'Z'")
+    @JSONField(format = "yyyy-MM-dd HH:mm:ss")
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     @Excel(name = "结束时间", width = 30, dateFormat = "yyyy-MM-dd")
     //@ApiModelProperty(value = "结束时间")
     private Date endDate;
