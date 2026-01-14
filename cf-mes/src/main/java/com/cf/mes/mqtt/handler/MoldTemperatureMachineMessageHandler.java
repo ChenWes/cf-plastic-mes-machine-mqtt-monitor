@@ -13,7 +13,7 @@ import com.cf.mes.domain.MouldTemperatureSettings;
 import com.cf.mes.domain.ProductionTask;
 import com.cf.mes.domain.ProductionTaskMtc;
 import com.cf.mes.domain.dto.MouldTemperatureMachineParams;
-import com.cf.mes.mqtt.util.MachineParamMapUtil;
+import com.cf.mes.mqtt.util.MachineParamUtil;
 import com.cf.mes.service.IMachineParamService;
 import com.cf.mes.service.IMouldTemperatureSettingsService;
 import com.cf.mes.service.IProductionTaskMtcService;
@@ -174,22 +174,22 @@ public class MoldTemperatureMachineMessageHandler implements MqttMessageHandler 
             }
             // 模温机设定的温度范围
             // 出媒温度
-            BigDecimal currentTemperature = MachineParamMapUtil.getBigDecimal(params, "medium_output_temperature", "value", null);
+            BigDecimal currentTemperature = MachineParamUtil.getBigDecimal(params, "medium_output_temperature", "value", null);
             if (currentTemperature == null) {
                 log.warn("medium_output_temperature is empty!! machineId: {}, MTC: {}", machineId, machineParams.getSupportMachineCode());
             }
             // 模温机设定的温度下限
-            BigDecimal mtcMinTemperature = MachineParamMapUtil.getBigDecimal(params, "set_lower_temperature_limit", "value", BigDecimal.ZERO);
+            BigDecimal mtcMinTemperature = MachineParamUtil.getBigDecimal(params, "set_lower_temperature_limit", "value", BigDecimal.ZERO);
             // 模温机设定的温度上限
-            BigDecimal mtcMaxTemperature = MachineParamMapUtil.getBigDecimal(params, "set_upper_temperature_limit", "value", null);
+            BigDecimal mtcMaxTemperature = MachineParamUtil.getBigDecimal(params, "set_upper_temperature_limit", "value", null);
 
             // 判断是否在设定配置的的范围中
-            boolean inSettingsTempRange = isValueInRange(currentTemperature, settings.getMinTemperature(), settings.getMaxTemperature());
+            boolean inSettingsTempRange = MachineParamUtil.isValueInRange(currentTemperature, settings.getMinTemperature(), settings.getMaxTemperature());
             paramsVo.setInSettingsTempRange(inSettingsTempRange);
 
             // 判断是否在机器设定的的范围中
             if (mtcMaxTemperature != null) {
-                boolean inMachineTempRange = isValueInRange(currentTemperature, mtcMinTemperature, mtcMaxTemperature);
+                boolean inMachineTempRange = MachineParamUtil.isValueInRange(currentTemperature, mtcMinTemperature, mtcMaxTemperature);
                 paramsVo.setInMachineTempRange(inMachineTempRange);
             }
 
@@ -232,21 +232,6 @@ public class MoldTemperatureMachineMessageHandler implements MqttMessageHandler 
         webSocketMsg.setData(data);
 
         return webSocketMsg;
-    }
-
-    private boolean isValueInRange(BigDecimal value, BigDecimal min, BigDecimal max) {
-        if (value == null) {
-            return false;
-        }
-        // 检查下限
-        if (min != null && value.compareTo(min) < 0) {
-            return false;
-        }
-        // 检查上限
-        if (max != null && value.compareTo(max) > 0) {
-            return false;
-        }
-        return true;
     }
 
     /**

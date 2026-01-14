@@ -80,6 +80,8 @@ public class WebSocketConstants {
      */
     public static final String PLASTIC_MTC_PARAMS = "PLASTIC_MTC_PARAMS" + WEB_SOCKET_CONNECT_LINE;
 
+    public static final String PLASTIC_DRYER_PARAMS = "PLASTIC_DRYER_PARAMS" + WEB_SOCKET_CONNECT_LINE;
+
     /**
      * 机边客户端-辅机提醒通知 实时更新监听频道
      */

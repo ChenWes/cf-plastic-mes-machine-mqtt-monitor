@@ -9,7 +9,7 @@ import java.util.Map;
  * @author coder-ren
  * @date 2026/1/12 10:11
  */
-public class MachineParamMapUtil {
+public class MachineParamUtil {
 
     public static Object getParamValue(Map<String, Map<String, Object>> params, String paramName, String valueName) {
         Map<String, Object> paramValueMap = params.get(paramName);
@@ -26,5 +26,20 @@ public class MachineParamMapUtil {
             value = new BigDecimal(String.valueOf(paramValue));
         }
         return value;
+    }
+
+    public static boolean isValueInRange(BigDecimal value, BigDecimal min, BigDecimal max) {
+        if (value == null) {
+            return false;
+        }
+        // 检查下限
+        if (min != null && value.compareTo(min) < 0) {
+            return false;
+        }
+        // 检查上限
+        if (max != null && value.compareTo(max) > 0) {
+            return false;
+        }
+        return true;
     }
 }

@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.cf.mes.mapper.FeedingTaskOrderMapper">
+    
+    <resultMap type="FeedingTaskOrder" id="FeedingTaskOrderResult">
+        <result property="id"    column="id"    />
+        <result property="taskId"    column="task_id"    />
+        <result property="orderId"    column="order_id"    />
+        <result property="orderCode"    column="order_code"    />
+        <result property="additionTime"    column="addition_time"    />
+        <result property="remark"    column="remark"    />
+        <result property="createBy"    column="create_by"    />
+        <result property="createTime"    column="create_time"    />
+        <result property="updateBy"    column="update_by"    />
+        <result property="updateTime"    column="update_time"    />
+    </resultMap>
+
+    <sql id="getFeedingTaskOrderVo">
+        select id, task_id, order_id, order_code, addition_time, remark, create_by, create_time, update_by, update_time from feeding_task_order
+    </sql>
+
+    <select id="getFeedingTaskOrderList" parameterType="FeedingTaskOrder" resultMap="FeedingTaskOrderResult">
+        <include refid="getFeedingTaskOrderVo"/>
+        <where>  
+            <if test="taskId != null "> and task_id = #{taskId}</if>
+            <if test="orderId != null "> and order_id = #{orderId}</if>
+            <if test="orderCode != null  and orderCode != ''"> and order_code = #{orderCode}</if>
+            <if test="additionTime != null "> and addition_time = #{additionTime}</if>
+        </where>
+    </select>
+
+    <select id="getFeedingTaskOrderListByIds" resultMap="FeedingTaskOrderResult">
+        <include refid="getFeedingTaskOrderVo"/>
+        where id in
+        <foreach item="id" collection="list" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </select>
+    
+    <select id="getFeedingTaskOrderById" parameterType="Long" resultMap="FeedingTaskOrderResult">
+        <include refid="getFeedingTaskOrderVo"/>
+        where id = #{id}
+    </select>
+        
+    <insert id="insertFeedingTaskOrder" parameterType="FeedingTaskOrder" useGeneratedKeys="true" keyProperty="id">
+        insert into feeding_task_order
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="taskId != null">task_id,</if>
+            <if test="orderId != null">order_id,</if>
+            <if test="orderCode != null and orderCode != ''">order_code,</if>
+            <if test="additionTime != null">addition_time,</if>
+            <if test="remark != null">remark,</if>
+            <if test="createBy != null">create_by,</if>
+            <if test="createTime != null">create_time,</if>
+            <if test="updateBy != null">update_by,</if>
+            <if test="updateTime != null">update_time,</if>
+         </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="taskId != null">#{taskId},</if>
+            <if test="orderId != null">#{orderId},</if>
+            <if test="orderCode != null and orderCode != ''">#{orderCode},</if>
+            <if test="additionTime != null">#{additionTime},</if>
+            <if test="remark != null">#{remark},</if>
+            <if test="createBy != null">#{createBy},</if>
+            <if test="createTime != null">#{createTime},</if>
+            <if test="updateBy != null">#{updateBy},</if>
+            <if test="updateTime != null">#{updateTime},</if>
+         </trim>
+    </insert>
+
+    <update id="updateFeedingTaskOrder" parameterType="FeedingTaskOrder">
+        update feeding_task_order
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="taskId != null">task_id = #{taskId},</if>
+            <if test="orderId != null">order_id = #{orderId},</if>
+            <if test="orderCode != null and orderCode != ''">order_code = #{orderCode},</if>
+            <if test="additionTime != null">addition_time = #{additionTime},</if>
+            <if test="remark != null">remark = #{remark},</if>
+            <if test="createBy != null">create_by = #{createBy},</if>
+            <if test="createTime != null">create_time = #{createTime},</if>
+            <if test="updateBy != null">update_by = #{updateBy},</if>
+            <if test="updateTime != null">update_time = #{updateTime},</if>
+        </trim>
+        where id = #{id}
+    </update>
+
+    <delete id="deleteFeedingTaskOrderById" parameterType="Long">
+        delete from feeding_task_order where id = #{id}
+    </delete>
+
+    <delete id="deleteFeedingTaskOrderByIds" parameterType="String">
+        delete from feeding_task_order where id in 
+        <foreach item="id" collection="array" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </delete>
+</mapper>

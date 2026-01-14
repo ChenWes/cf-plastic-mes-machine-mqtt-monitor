@@ -1,5 +1,6 @@
 package com.cf.mes.service;
 
+import com.cf.mes.domain.dto.DryingMachineParams;
 import com.cf.mes.domain.dto.MouldTemperatureMachineParams;
 
 /**
@@ -16,4 +17,5 @@ public interface IMachineParamService {
      */
     MouldTemperatureMachineParams getMouldTemperatureMachineParams(Long machineId, String machineCode);
 
+    DryingMachineParams getDryingMachineParams(Long machineId, String machineCode);
 }
