@@ -137,6 +137,7 @@ public class FeedingTaskServiceImpl implements IFeedingTaskService {
         taskDetailQryDto.setTaskId(taskId);
         taskDetailQryDto.setTaskStatusList(Lists.newArrayList("running"));
         taskDetailQryDto.setLatestFlag(1);
+        taskDetailQryDto.setResetFlag(0);
         List<MachineFeedingTaskDetailDto> taskDetailDtos = feedingTaskOrderDetailService.getMachineFeedingTaskDetailDtos(taskDetailQryDto);
 
         // 获取统计信息

@@ -10,12 +10,14 @@ import com.cf.common.enums.biz.FeedingTaskStatus;
 import com.cf.mes.common.WebSocketPublishService;
 import com.cf.mes.domain.FeedingTask;
 import com.cf.mes.domain.FeedingTaskOrderDetail;
+import com.cf.mes.domain.Machine;
 import com.cf.mes.domain.dto.DryingMachineParams;
 import com.cf.mes.domain.dto.MachineFeedingTaskDetailDto;
 import com.cf.mes.mqtt.util.MachineParamUtil;
 import com.cf.mes.service.IFeedingTaskOrderDetailService;
 import com.cf.mes.service.IFeedingTaskService;
 import com.cf.mes.service.IMachineParamService;
+import com.cf.mes.service.IMachineService;
 import com.cf.mqtt.entity.machine.DryingMachinePayload;
 import com.cf.mqtt.handler.MqttMessageHandler;
 import lombok.extern.slf4j.Slf4j;
@@ -54,6 +56,9 @@ public class DryingMachineMessageHandler implements MqttMessageHandler {
 
     @Autowired
     private IMachineParamService machineParamService;
+
+    @Autowired
+    private IMachineService machineService;
 
 
     @Override
@@ -111,6 +116,7 @@ public class DryingMachineMessageHandler implements MqttMessageHandler {
             sendDryingMachineNoticeToMachineClient(feedingTask.getMachineId(), runningFeedingDetails);
 
             // 4. 下发告警到加料客户端
+            Machine machine = machineService.getMachineById(feedingTask.getMachineId());
 
 
         } catch (Exception e) {
@@ -233,26 +239,30 @@ public class DryingMachineMessageHandler implements MqttMessageHandler {
      *
      * @param machinePayload 站点信息
      */
-    private void updateRedisCache(DryingMachinePayload machinePayload) {
+    private boolean updateRedisCache(DryingMachinePayload machinePayload) {
         if (machinePayload == null) {
-            return;
+            return false;
         }
         String paramName = machinePayload.getName();
         String deviceId = machinePayload.getDeviceId();
         if (deviceId == null || deviceId.trim().isEmpty()) {
             log.warn("DeviceId is null or empty, cannot update cache");
-            return;
+            return false;
         }
         String machineCode = deviceId;
         String key = RedisConst.DRYING_MACHINE_PARAM_HASH_KEY + machineCode;
         String cacheMapValue = redisCache.getCacheMapValue(key, paramName);
         if (cacheMapValue == null) {
             redisCache.setCacheMapValue(key, paramName, JSON.toJSONString(machinePayload));
+            return true;
         } else {
             DryingMachinePayload cache = JSON.parseObject(cacheMapValue, DryingMachinePayload.class);
             Date lastTimestamp = cache.getTimestamp();
             if (machinePayload.getTimestamp().compareTo(lastTimestamp) > 0) {
                 redisCache.setCacheMapValue(key, paramName, JSON.toJSONString(machinePayload));
+                return true;
+            } else {
+                return false;
             }
         }
     }

@@ -4,6 +4,8 @@ import com.alibaba.fastjson.annotation.JSONField;
 import com.cf.common.annotation.Excel;
 import com.cf.common.core.domain.BaseEntity;
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+///import com.fasterxml.jackson.databind.ser.std.ToStringSerializer;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 
@@ -18,7 +20,7 @@ import java.util.Date;
  * 加料/烤料任务明细对象 feeding_task_order_detail
  *
  * @author wilfmao
- * @date 2026-01-13
+ * @date 2026-01-15
  */
 ///@ApiModel(value = "加料/烤料任务明细")
 public class FeedingTaskOrderDetail extends BaseEntity
@@ -52,10 +54,10 @@ public class FeedingTaskOrderDetail extends BaseEntity
     //@ApiModelProperty(value = "物料批号")
     private String materialBatchNo;
 
-    /** 状态: preparing-准备中,running-执行中,completed-完成,clear-清料,returned-退料,canceled-取消 */
-    @Excel(name = "状态: preparing-准备中,running-执行中,completed-完成,clear-清料,returned-退料,canceled-取消")
-    //@ApiModelProperty(value = "状态: preparing-准备中,running-执行中,completed-完成,clear-清料,returned-退料,canceled-取消")
-    private String taskStatus;
+    /** 明细状态: preparing-准备中,running-执行中,completed-完成,clear-清料,returned-退料,canceled-取消 */
+    @Excel(name = "明细状态: preparing-准备中,running-执行中,completed-完成,clear-清料,returned-退料,canceled-取消")
+    //@ApiModelProperty(value = "明细状态: preparing-准备中,running-执行中,completed-完成,clear-清料,returned-退料,canceled-取消")
+    private String detailStatus;
 
     /** 辅机器ID */
     @Excel(name = "辅机器ID")
@@ -84,6 +86,11 @@ public class FeedingTaskOrderDetail extends BaseEntity
     @Excel(name = "加料序号")
     //@ApiModelProperty(value = "加料序号")
     private Integer feedingSeqNo;
+
+    /** 是否重置：0 - 否， 1 是 */
+    @Excel(name = "是否重置：0 - 否， 1 是")
+    //@ApiModelProperty(value = "是否重置：0 - 否， 1 是")
+    private Integer resetFlag;
 
     /** 操作员工ID */
     @Excel(name = "操作员工ID")
@@ -146,14 +153,14 @@ public class FeedingTaskOrderDetail extends BaseEntity
     {
         return materialBatchNo;
     }
-    public void setTaskStatus(String taskStatus)
+    public void setDetailStatus(String detailStatus)
     {
-        this.taskStatus = taskStatus;
+        this.detailStatus = detailStatus;
     }
 
-    public String getTaskStatus()
+    public String getDetailStatus()
     {
-        return taskStatus;
+        return detailStatus;
     }
     public void setSupportMachineId(Long supportMachineId)
     {
@@ -200,6 +207,15 @@ public class FeedingTaskOrderDetail extends BaseEntity
     {
         return feedingSeqNo;
     }
+    public void setResetFlag(Integer resetFlag)
+    {
+        this.resetFlag = resetFlag;
+    }
+
+    public Integer getResetFlag()
+    {
+        return resetFlag;
+    }
     public void setEmployeeId(Long employeeId)
     {
         this.employeeId = employeeId;
@@ -230,18 +246,19 @@ public class FeedingTaskOrderDetail extends BaseEntity
 
     @Override
     public String toString() {
-        return new ToStringBuilder(this, ToStringStyle.MULTI_LINE_STYLE)
+        return new ToStringBuilder(this,ToStringStyle.MULTI_LINE_STYLE)
                 .append("detailId", getDetailId())
                 .append("taskId", getTaskId())
                 .append("materialId", getMaterialId())
                 .append("materialCode", getMaterialCode())
                 .append("materialBatchNo", getMaterialBatchNo())
-                .append("taskStatus", getTaskStatus())
+                .append("detailStatus", getDetailStatus())
                 .append("supportMachineId", getSupportMachineId())
                 .append("supportMachineCode", getSupportMachineCode())
                 .append("feedingTime", getFeedingTime())
                 .append("feedingWeight", getFeedingWeight())
                 .append("feedingSeqNo", getFeedingSeqNo())
+                .append("resetFlag", getResetFlag())
                 .append("remark", getRemark())
                 .append("employeeId", getEmployeeId())
                 .append("employeeCode", getEmployeeCode())

@@ -10,12 +10,13 @@
         <result property="materialId"    column="material_id"    />
         <result property="materialCode"    column="material_code"    />
         <result property="materialBatchNo"    column="material_batch_no"    />
-        <result property="taskStatus"    column="task_status"    />
+        <result property="detailStatus"    column="detail_status"    />
         <result property="supportMachineId"    column="support_machine_id"    />
         <result property="supportMachineCode"    column="support_machine_code"    />
         <result property="feedingTime"    column="feeding_time"    />
         <result property="feedingWeight"    column="feeding_weight"    />
         <result property="feedingSeqNo"    column="feeding_seq_no"    />
+        <result property="resetFlag"    column="reset_flag"    />
         <result property="remark"    column="remark"    />
         <result property="employeeId"    column="employee_id"    />
         <result property="employeeCode"    column="employee_code"    />
@@ -27,7 +28,7 @@
     </resultMap>
 
     <sql id="getFeedingTaskOrderDetailVo">
-        select detail_id, task_id, material_id, material_code, material_batch_no, task_status, support_machine_id, support_machine_code, feeding_time, feeding_weight, feeding_seq_no, remark, employee_id, employee_code, latest_flag, create_by, create_time, update_by, update_time from feeding_task_order_detail
+        select detail_id, task_id, material_id, material_code, material_batch_no, detail_status, support_machine_id, support_machine_code, feeding_time, feeding_weight, feeding_seq_no, reset_flag, remark, employee_id, employee_code, latest_flag, create_by, create_time, update_by, update_time from feeding_task_order_detail
     </sql>
 
     <select id="getFeedingTaskOrderDetailList" parameterType="FeedingTaskOrderDetail" resultMap="FeedingTaskOrderDetailResult">
@@ -37,12 +38,13 @@
             <if test="materialId != null "> and material_id = #{materialId}</if>
             <if test="materialCode != null  and materialCode != ''"> and material_code = #{materialCode}</if>
             <if test="materialBatchNo != null  and materialBatchNo != ''"> and material_batch_no = #{materialBatchNo}</if>
-            <if test="taskStatus != null  and taskStatus != ''"> and task_status = #{taskStatus}</if>
+            <if test="detailStatus != null  and detailStatus != ''"> and detail_status = #{detailStatus}</if>
             <if test="supportMachineId != null "> and support_machine_id = #{supportMachineId}</if>
             <if test="supportMachineCode != null  and supportMachineCode != ''"> and support_machine_code = #{supportMachineCode}</if>
             <if test="feedingTime != null "> and feeding_time = #{feedingTime}</if>
             <if test="feedingWeight != null "> and feeding_weight = #{feedingWeight}</if>
             <if test="feedingSeqNo != null "> and feeding_seq_no = #{feedingSeqNo}</if>
+            <if test="resetFlag != null "> and reset_flag = #{resetFlag}</if>
             <if test="employeeId != null "> and employee_id = #{employeeId}</if>
             <if test="employeeCode != null  and employeeCode != ''"> and employee_code = #{employeeCode}</if>
             <if test="latestFlag != null "> and latest_flag = #{latestFlag}</if>
@@ -69,12 +71,13 @@
             <if test="materialId != null">material_id,</if>
             <if test="materialCode != null and materialCode != ''">material_code,</if>
             <if test="materialBatchNo != null and materialBatchNo != ''">material_batch_no,</if>
-            <if test="taskStatus != null">task_status,</if>
+            <if test="detailStatus != null">detail_status,</if>
             <if test="supportMachineId != null">support_machine_id,</if>
             <if test="supportMachineCode != null and supportMachineCode != ''">support_machine_code,</if>
             <if test="feedingTime != null">feeding_time,</if>
             <if test="feedingWeight != null">feeding_weight,</if>
             <if test="feedingSeqNo != null">feeding_seq_no,</if>
+            <if test="resetFlag != null">reset_flag,</if>
             <if test="remark != null">remark,</if>
             <if test="employeeId != null">employee_id,</if>
             <if test="employeeCode != null">employee_code,</if>
@@ -89,12 +92,13 @@
             <if test="materialId != null">#{materialId},</if>
             <if test="materialCode != null and materialCode != ''">#{materialCode},</if>
             <if test="materialBatchNo != null and materialBatchNo != ''">#{materialBatchNo},</if>
-            <if test="taskStatus != null">#{taskStatus},</if>
+            <if test="detailStatus != null">#{detailStatus},</if>
             <if test="supportMachineId != null">#{supportMachineId},</if>
             <if test="supportMachineCode != null and supportMachineCode != ''">#{supportMachineCode},</if>
             <if test="feedingTime != null">#{feedingTime},</if>
             <if test="feedingWeight != null">#{feedingWeight},</if>
             <if test="feedingSeqNo != null">#{feedingSeqNo},</if>
+            <if test="resetFlag != null">#{resetFlag},</if>
             <if test="remark != null">#{remark},</if>
             <if test="employeeId != null">#{employeeId},</if>
             <if test="employeeCode != null">#{employeeCode},</if>
@@ -113,12 +117,13 @@
             <if test="materialId != null">material_id = #{materialId},</if>
             <if test="materialCode != null and materialCode != ''">material_code = #{materialCode},</if>
             <if test="materialBatchNo != null and materialBatchNo != ''">material_batch_no = #{materialBatchNo},</if>
-            <if test="taskStatus != null">task_status = #{taskStatus},</if>
+            <if test="detailStatus != null">detail_status = #{detailStatus},</if>
             <if test="supportMachineId != null">support_machine_id = #{supportMachineId},</if>
             <if test="supportMachineCode != null and supportMachineCode != ''">support_machine_code = #{supportMachineCode},</if>
             <if test="feedingTime != null">feeding_time = #{feedingTime},</if>
             <if test="feedingWeight != null">feeding_weight = #{feedingWeight},</if>
             <if test="feedingSeqNo != null">feeding_seq_no = #{feedingSeqNo},</if>
+            <if test="resetFlag != null">reset_flag = #{resetFlag},</if>
             <if test="remark != null">remark = #{remark},</if>
             <if test="employeeId != null">employee_id = #{employeeId},</if>
             <if test="employeeCode != null">employee_code = #{employeeCode},</if>
@@ -193,45 +198,24 @@
                 </foreach>
             </if>
             <if test="latestFlag != null "> and latest_flag = #{latestFlag}</if>
+            <if test="resetFlag != null "> AND reset_flag = #{resetFlag}</if>
         </where>
     </select>
 
     <select id="getMachineFeedingTaskDetailStatDtos" resultType="com.cf.mes.domain.dto.FeedingTaskDetailStatDto">
         SELECT
-        det.material_id materialId,
-        min(det.feeding_time) firstFeedingTime,
-        sum(det.feeding_weight) totalFeedingWeight
+            det.material_id materialId,
+            MIN(det.feeding_time) AS firstFeedingTime,
+            sum(det.feeding_weight) totalFeedingWeight
         FROM
         feeding_task_order_detail det
         <where>
             <if test="taskId != null">
                 AND det.task_id = #{taskId}
             </if>
+            <if test="resetFlag != null "> AND reset_flag = #{resetFlag}</if>
         </where>
         group by material_id
-    </select>
-
-    <!-- task.task_status = 'running' OR (task.task_type = 'prepare' and task.task_status = 'preparing') -->
-    <select id="getBindingDryingMachines" resultMap="FeedingTaskOrderDetailResult">
-        SELECT
-        det.*
-        FROM
-        feeding_task task
-        INNER JOIN feeding_task_order_detail det ON task.id = det.task_id
-        WHERE
-        task.task_status IN ('running','preparing')
-        <if test="supportMachineCodes != null and supportMachineCodes.size() > 0">
-            AND det.support_machine_code IN
-            <foreach item="supportMachineCode" collection="supportMachineCodes" open="(" separator="," close=")">
-                #{supportMachineCode}
-            </foreach>
-        </if>
-        <if test="supportMachineIds != null and supportMachineIds.size() > 0">
-            AND det.support_machine_id IN
-            <foreach item="supportMachineId" collection="supportMachineIds" open="(" separator="," close=")">
-                #{supportMachineId}
-            </foreach>
-        </if>
     </select>
 
     <select id="getRunningDryingMachine" resultMap="FeedingTaskOrderDetailResult">
@@ -243,7 +227,7 @@
         WHERE
             task.task_status = 'running'
           AND det.latest_flag = 1
-          AND det.task_status = 'running'
+          AND det.reset_flag = 0
           AND support_machine_code = #{machineCode}
     </select>
 </mapper>

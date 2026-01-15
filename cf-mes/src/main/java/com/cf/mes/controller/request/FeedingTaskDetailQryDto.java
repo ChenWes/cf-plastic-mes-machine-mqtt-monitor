@@ -15,4 +15,5 @@ public class FeedingTaskDetailQryDto implements Serializable {
     private List<String> taskTypeList;
     private List<String> taskStatusList;
     private Integer latestFlag;
+    private Integer resetFlag;
 }
