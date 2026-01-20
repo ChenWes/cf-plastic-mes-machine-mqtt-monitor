@@ -105,7 +105,8 @@ public class DryingMachineMessageHandler implements MqttMessageHandler {
                 log.info("==>DryingMachineMessageHandler.handleMessage: Can not find Running Task for machine : {}", machineCode);
                 return;
             }
-            List<MachineFeedingTaskDetailDto> runningFeedingDetails = feedingTaskService.getMachineFeedingTaskDetailDtosByTaskId(detail.getTaskId());
+            List<MachineFeedingTaskDetailDto> runningFeedingDetails =
+                    feedingTaskService.getMachineFeedingTaskDetailDtosByTaskId(feedingTask.getMachineId(), feedingTask.getId());
             // 获取实时参数信息
             getDryingMachineParams(runningFeedingDetails);
 

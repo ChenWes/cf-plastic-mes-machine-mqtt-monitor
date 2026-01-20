@@ -68,5 +68,5 @@ public interface IFeedingTaskService {
      */
     public int deleteFeedingTaskById(Long id);
 
-    List<MachineFeedingTaskDetailDto> getMachineFeedingTaskDetailDtosByTaskId(Long taskId);
+    List<MachineFeedingTaskDetailDto> getMachineFeedingTaskDetailDtosByTaskId(Long machineId, Long taskId);
 }

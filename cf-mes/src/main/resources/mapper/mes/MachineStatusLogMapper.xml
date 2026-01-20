@@ -1,0 +1,153 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.cf.mes.mapper.MachineStatusLogMapper">
+    
+    <resultMap type="com.cf.mes.domain.MachineStatusLog" id="MachineStatusLogResult">
+        <result property="machineStatusLogId"    column="machine_status_log_id"    />
+        <result property="machineId"    column="machine_id"    />
+        <result property="machineStatusId"    column="machine_status_id"    />
+        <result property="employeeId"    column="employee_id"    />
+        <result property="logFromTime"    column="log_from_time"    />
+        <result property="logEndTime"    column="log_end_time"    />
+
+        <result property="createBy"    column="create_by"    />
+        <result property="createTime"    column="create_time"    />
+        <result property="updateBy"    column="update_by"    />
+        <result property="updateTime"    column="update_time"    />
+        <result property="remark"    column="remark"    />
+    </resultMap>
+
+    <sql id="getMachineStatusLogSql">
+        select machine_status_log_id, machine_id, machine_status_id, employee_id, log_from_time, log_end_time, create_by, create_time, update_by, update_time, remark from machine_status_log
+    </sql>
+    
+    <select id="getMachineStatusLogById" parameterType="Long" resultMap="MachineStatusLogResult">
+          <include refid="getMachineStatusLogSql"/>
+        where machine_status_log_id = #{machineStatusLogId}
+    </select>
+
+    <select id="getMachineStatusLogList" resultMap="MachineStatusLogResult">
+        <include refid="getMachineStatusLogSql"/>
+        <where>
+            <if test="machineId != null">and machine_id = #{machineId}</if>
+            <if test="machineStatusId != null">and machine_status_id = #{machineStatusId}</if>
+            <if test="employeeId != null">and employee_id = #{employeeId}</if>
+
+            <if test="logFromTime != null">and log_from_time = #{logFromTime}</if>
+            <if test="logEndTime != null">and log_end_time = #{logEndTime}</if>
+
+            <if test="createBy != null">and create_by = #{createBy}</if>
+            <if test="createTime != null">and create_time = #{createTime}</if>
+            <if test="updateBy != null">and update_by = #{updateBy}</if>
+            <if test="updateTime != null">and update_time = #{updateTime}</if>
+            <if test="remark != null">and remark = #{remark}</if>
+        </where>
+    </select>
+
+    <insert id="insertMachineStatusLog" parameterType="com.cf.mes.domain.MachineStatusLog" useGeneratedKeys="true" keyProperty="machineStatusLogId">
+        insert into machine_status_log
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="machineId != null">machine_id,</if>
+            <if test="machineStatusId != null">machine_status_id,</if>
+            <if test="employeeId != null">employee_id,</if>
+
+            <if test="logFromTime != null">log_from_time,</if>
+            <if test="logEndTime != null">log_end_time,</if>
+
+            <if test="createBy != null">create_by,</if>
+            <if test="createTime != null">create_time,</if>
+            <if test="updateBy != null">update_by,</if>
+            <if test="updateTime != null">update_time,</if>
+            <if test="remark != null">remark,</if>
+         </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="machineId != null">#{machineId},</if>
+            <if test="machineStatusId != null">#{machineStatusId},</if>
+            <if test="employeeId != null">#{employeeId},</if>
+
+            <if test="logFromTime != null">#{logFromTime},</if>
+            <if test="logEndTime != null">#{logEndTime},</if>
+
+            <if test="createBy != null">#{createBy},</if>
+            <if test="createTime != null">#{createTime},</if>
+            <if test="updateBy != null">#{updateBy},</if>
+            <if test="updateTime != null">#{updateTime},</if>
+            <if test="remark != null">#{remark},</if>
+         </trim>
+    </insert>
+
+    <update id="updateMachineStatusLog" parameterType="com.cf.mes.domain.MachineStatusLog">
+        update `machine_status_log`
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="machineId != null">machine_id = #{machineId},</if>
+            <if test="machineStatusId != null">machine_status_id = #{machineStatusId},</if>
+            <if test="employeeId != null">employee_id = #{employeeId},</if>
+
+            <if test="logFromTime != null">log_from_time = #{logFromTime},</if>
+            <if test="logEndTime != null">log_end_time = #{logEndTime},</if>
+
+            <if test="createBy != null">create_by = #{createBy},</if>
+            <if test="createTime != null">create_time = #{createTime},</if>
+            <if test="updateBy != null">update_by = #{updateBy},</if>
+            <if test="updateTime != null">update_time = #{updateTime},</if>
+            <if test="remark != null">remark = #{remark},</if>
+        </trim>
+        where machine_status_log_id = #{machineStatusLogId}
+    </update>
+
+    <select id="getLatestMachineStatusLogByMachineId" parameterType="Long" resultMap="MachineStatusLogResult">
+        <include refid="getMachineStatusLogSql"/>
+        where machine_id = #{machineId} and log_end_time is null
+    </select>
+
+    <select id="getLastMachineStatusLogListByMachineIds" resultMap="MachineStatusLogResult">
+        <include refid="getMachineStatusLogSql"/>
+        where log_end_time is null
+        and machine_id in
+        <foreach collection="machineIds" item="id" index="index" open="(" close=")" separator=",">
+            #{id}
+        </foreach>
+    </select>
+
+    <select id="getMachineStatusLogListByProcessDate" resultMap="MachineStatusLogResult">
+        <include refid="getMachineStatusLogSql"/>
+        WHERE
+        ((log_from_time >= #{startDate} AND log_from_time &lt;= #{endDate}) AND (log_end_time >= #{startDate} AND log_end_time &lt;= #{endDate}))
+        OR (log_from_time >= #{startDate} AND log_from_time &lt;= #{endDate})
+        OR (log_end_time >= #{startDate} AND log_end_time &lt;= #{endDate})
+        OR (log_from_time &lt; #{startDate} AND log_end_time > #{endDate})
+        OR (log_from_time &lt; #{startDate} AND log_end_time IS NULL)
+    </select>
+
+    <select id="getLatestMachineStatusLogByMachineIdAndProduceId" resultMap="MachineStatusLogResult">
+        <include refid="getMachineStatusLogSql"/>
+        where machine_id = #{machineId} and machine_status_id = #{produceId} order by log_from_time desc limit 1
+    </select>
+
+    <select id="getMachineStatusLogListByMachineIdAndLogFromTime" resultMap="MachineStatusLogResult">
+        <include refid="getMachineStatusLogSql"/>
+        where machine_id = #{machineId} and log_from_time > #{logFromTime}
+    </select>
+
+    <select id="getMachineStatusLogListByMachineId" parameterType="Long" resultMap="MachineStatusLogResult">
+        <include refid="getMachineStatusLogSql"/>
+        where machine_id = #{machineId}
+    </select>
+
+    <select id="getFirstProductionLogOfCurrentProuction" resultMap="MachineStatusLogResult">
+        <include refid="getMachineStatusLogSql"/>
+        WHERE
+        machine_id = #{machineId}
+        AND machine_status_id = 1
+        AND machine_status_log_id > ( SELECT machine_status_log_id
+        FROM machine_status_log
+        WHERE machine_id = #{machineId} AND machine_status_id = 7
+        ORDER BY log_from_time DESC LIMIT 1
+        )
+        ORDER BY
+        machine_status_log_id ASC
+        LIMIT 1
+    </select>
+</mapper>

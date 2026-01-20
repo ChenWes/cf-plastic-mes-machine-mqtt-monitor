@@ -6,10 +6,12 @@ import com.cf.common.utils.DateUtils;
 import com.cf.common.utils.SecurityUtils;
 import com.cf.mes.controller.request.FeedingTaskDetailQryDto;
 import com.cf.mes.domain.FeedingTask;
+import com.cf.mes.domain.MachineStatusLog;
 import com.cf.mes.domain.dto.DryingMachineParams;
 import com.cf.mes.domain.dto.FeedingTaskDetailStatDto;
 import com.cf.mes.domain.dto.MachineFeedingTaskDetailDto;
 import com.cf.mes.mapper.FeedingTaskMapper;
+import com.cf.mes.mapper.MachineStatusLogMapper;
 import com.cf.mes.service.IFeedingTaskOrderDetailService;
 import com.cf.mes.service.IFeedingTaskService;
 import com.cf.mes.service.IMachineParamService;
@@ -18,10 +20,8 @@ import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 /**
@@ -40,6 +40,9 @@ public class FeedingTaskServiceImpl implements IFeedingTaskService {
 
     @Autowired
     private IMachineParamService machineParamService;
+
+    @Autowired
+    private MachineStatusLogMapper machineStatusLogMapper;
 
     /**
      * 查询加料/烤料任务
@@ -131,33 +134,69 @@ public class FeedingTaskServiceImpl implements IFeedingTaskService {
 
 
     @Override
-    public List<MachineFeedingTaskDetailDto> getMachineFeedingTaskDetailDtosByTaskId(Long taskId) {
+    public List<MachineFeedingTaskDetailDto> getMachineFeedingTaskDetailDtosByTaskId(Long machineId, Long taskId) {
         // 获取配方配置信息
         FeedingTaskDetailQryDto taskDetailQryDto = new FeedingTaskDetailQryDto();
         taskDetailQryDto.setTaskId(taskId);
-        taskDetailQryDto.setTaskStatusList(Lists.newArrayList("running"));
+        // taskDetailQryDto.setTaskStatusList(Lists.newArrayList("running"));
         taskDetailQryDto.setLatestFlag(1);
         taskDetailQryDto.setResetFlag(0);
         List<MachineFeedingTaskDetailDto> taskDetailDtos = feedingTaskOrderDetailService.getMachineFeedingTaskDetailDtos(taskDetailQryDto);
 
-        // 获取统计信息
-        List<FeedingTaskDetailStatDto> taskDetailStatDtos = feedingTaskOrderDetailService.getMachineFeedingTaskDetailStatDtos(taskDetailQryDto);
+        // 获取统计信息，转换为Map便于快速查找 O(1)
+        Map<Long, FeedingTaskDetailStatDto> statMap = feedingTaskOrderDetailService
+                .getMachineFeedingTaskDetailStatDtos(taskDetailQryDto)
+                .stream()
+                .collect(Collectors.toMap(FeedingTaskDetailStatDto::getMaterialId, Function.identity(), (a, b) -> a));
+
+        // 获取当次生产-首次切换机器到生产状态的日志记录
+        MachineStatusLog machineStatusLog = machineStatusLogMapper.getFirstProductionLogOfCurrentProuction(machineId);
+        Date firstProductionTime = machineStatusLog != null ? machineStatusLog.getLogFromTime() : null;
 
         Date now = new Date();
         for (MachineFeedingTaskDetailDto detailDto : taskDetailDtos) {
-            FeedingTaskDetailStatDto taskDetailStatDto = taskDetailStatDtos.stream()
-                    .filter(r -> r.getMaterialId().equals(detailDto.getMaterialId())).findFirst().orElse(null);
-            if (taskDetailStatDto != null) {
-                detailDto.setFirstFeedingTime(taskDetailStatDto.getFirstFeedingTime());
-                detailDto.setTotalFeedingWeight(taskDetailStatDto.getTotalFeedingWeight());
-                long second = DateUtil.between(detailDto.getFirstFeedingTime(), now, DateUnit.SECOND);
-                detailDto.setDryingDuration(second / 3600.0);
+
+            detailDto.setFirstProductionTime(machineStatusLog.getLogFromTime());
+
+            // 设置统计信息
+            FeedingTaskDetailStatDto statDto = statMap.get(detailDto.getMaterialId());
+            if (statDto != null) {
+                populateStatInfo(detailDto, statDto, firstProductionTime, now);
             }
+
             // 获取redis缓存信息
             DryingMachineParams dryingMachineParams = machineParamService.getDryingMachineParams(detailDto.getSupportMachineId(), detailDto.getSupportMachineCode());
             detailDto.setMachineParams(dryingMachineParams);
         }
 
         return taskDetailDtos;
+    }
+
+    /**
+     * 填充统计信息
+     *
+     * @param detailDto           明细信息
+     * @param statDto             统计信息
+     * @param firstProductionTime 当次生产-首次切换机器生产状态时间
+     * @param now                 当前时间
+     */
+    private void populateStatInfo(MachineFeedingTaskDetailDto detailDto, FeedingTaskDetailStatDto statDto, Date firstProductionTime, Date now) {
+
+        Date firstFeedingTime = statDto.getFirstFeedingTime();
+        detailDto.setFirstFeedingTime(firstFeedingTime);
+        detailDto.setTotalFeedingWeight(statDto.getTotalFeedingWeight());
+
+        // 计算干燥时长基准时间：取首次生产时间和首次投料时间的较大值
+        Date dryingBaseTime = (firstProductionTime != null && firstProductionTime.after(firstFeedingTime))
+                ? firstProductionTime
+                : now;
+
+        // 干燥时长（小时）
+        long dryingSeconds = DateUtil.between(firstFeedingTime, dryingBaseTime, DateUnit.SECOND);
+        detailDto.setDryingDuration(dryingSeconds / 3600.0);
+
+        // 总干燥时长（小时）
+        long totalDryingSeconds = DateUtil.between(firstFeedingTime, now, DateUnit.SECOND);
+        detailDto.setTotalDryingDuration(totalDryingSeconds / 3600.0);
     }
 }

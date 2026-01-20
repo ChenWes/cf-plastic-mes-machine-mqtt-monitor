@@ -26,10 +26,14 @@ public class MachineFeedingTaskDetailDto extends FeedingTaskOrderDetail {
 
 
     /**
-     * 烤料时长 : （当前时间 - 首次加料时间 ）/ 3600
+     * 烤料时长 : （当次生产的首次切换机器状态到生产状态的时间 - 首次加料时间 ）/ 3600
      */
     private Double dryingDuration;
 
+    /**
+     * 烤料总时长 : （当前时间 - 首次加料时间 ）/ 3600
+     */
+    private Double totalDryingDuration;
 
     // 物料性质配置信息
     /**
@@ -73,5 +77,12 @@ public class MachineFeedingTaskDetailDto extends FeedingTaskOrderDetail {
      */
     private Boolean inSettingsTimeRange;
 
+
+    /**
+     * 当次生产-首次切换机器生产状态时间
+     */
+    @JSONField(format = "yyyy-MM-dd HH:mm:ss")
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    private Date firstProductionTime;
 
 }
