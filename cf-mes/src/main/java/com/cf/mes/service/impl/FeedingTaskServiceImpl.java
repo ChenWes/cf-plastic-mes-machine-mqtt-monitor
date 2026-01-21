@@ -156,7 +156,7 @@ public class FeedingTaskServiceImpl implements IFeedingTaskService {
         Date now = new Date();
         for (MachineFeedingTaskDetailDto detailDto : taskDetailDtos) {
 
-            detailDto.setFirstProductionTime(machineStatusLog.getLogFromTime());
+            detailDto.setFirstProductionTime(firstProductionTime);
 
             // 设置统计信息
             FeedingTaskDetailStatDto statDto = statMap.get(detailDto.getMaterialId());
