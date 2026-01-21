@@ -10,9 +10,9 @@ import com.cf.common.enums.biz.FeedingTaskStatus;
 import com.cf.mes.common.WebSocketPublishService;
 import com.cf.mes.domain.FeedingTask;
 import com.cf.mes.domain.FeedingTaskOrderDetail;
-import com.cf.mes.domain.Machine;
 import com.cf.mes.domain.dto.DryingMachineParams;
 import com.cf.mes.domain.dto.MachineFeedingTaskDetailDto;
+import com.cf.mes.domain.dto.OrganInfoDto;
 import com.cf.mes.mqtt.util.MachineParamUtil;
 import com.cf.mes.service.IFeedingTaskOrderDetailService;
 import com.cf.mes.service.IFeedingTaskService;
@@ -84,10 +84,10 @@ public class DryingMachineMessageHandler implements MqttMessageHandler {
                 return;
             }
 
-            // 1. 缓存数据
+            // 缓存数据
             updateRedisCache(machinePayload);
 
-            // 2. 下发通知
+            // 下发通知
             // 获取机器编号
             String machineCode = machinePayload.getDeviceId();
             if (machineCode == null) {
@@ -105,20 +105,27 @@ public class DryingMachineMessageHandler implements MqttMessageHandler {
                 log.info("==>DryingMachineMessageHandler.handleMessage: Can not find Running Task for machine : {}", machineCode);
                 return;
             }
+
+            // 机台ID
+            Long machineId = feedingTask.getMachineId();
+            // 加料/烤料任务明细
             List<MachineFeedingTaskDetailDto> runningFeedingDetails =
-                    feedingTaskService.getMachineFeedingTaskDetailDtosByTaskId(feedingTask.getMachineId(), feedingTask.getId());
+                    feedingTaskService.getMachineFeedingTaskDetailDtosByTaskId(machineId, feedingTask.getId());
+
             // 获取实时参数信息
             getDryingMachineParams(runningFeedingDetails);
 
-            // 2. 下发参数详情数据实时更新通知
-            sendDryingMachineParamsToMachineClient(feedingTask.getMachineId(), runningFeedingDetails);
+            // 下发参数详情数据实时更新通知
+            sendDryingMachineParamsToMachineClient(machineId, runningFeedingDetails);
 
-            // 3. 下发机边客户端首页告警消息
-            sendDryingMachineNoticeToMachineClient(feedingTask.getMachineId(), runningFeedingDetails);
+            // 获取温度范围、时间范围比较结果
+            getRangeComparisonResults(machineId, runningFeedingDetails);
 
-            // 4. 下发告警到加料客户端
-            Machine machine = machineService.getMachineById(feedingTask.getMachineId());
+            // 下发告警通知
+            Map<String, Object> noticeData = getDryingMachineNoticeData(machineId, runningFeedingDetails);
 
+            // 下发告警到相关客户端
+            sendDryingMachineNoticeToClients(machineId, noticeData);
 
         } catch (Exception e) {
             log.error("Error while handling dryingMachine message", e);
@@ -126,90 +133,78 @@ public class DryingMachineMessageHandler implements MqttMessageHandler {
         }
     }
 
-    private void sendDryingMachineNoticeToMachineClient(Long machineId, List<MachineFeedingTaskDetailDto> runningFeedingDetails) throws Exception {
-        if (CollectionUtils.isEmpty(runningFeedingDetails)) {
-            return;
-        }
-
-        for (MachineFeedingTaskDetailDto dto : runningFeedingDetails) {
-            // 设定ID
-            DryingMachineParams machineParams = dto.getMachineParams();
-            Map<String, Map<String, Object>> params = machineParams.getParams();
-            // 获取出媒温度
-            if (params == null || params.isEmpty()) {
-                continue;
-            }
-            // 干燥机设定的温度范围
-            // 出媒温度
-            BigDecimal currentTemperature = MachineParamUtil.getBigDecimal(params, "actual_temperature", "value", null);
-            if (currentTemperature == null) {
-                log.warn("actual_temperature is empty!! machineId: {}, Dryer: {}", machineId, machineParams.getSupportMachineCode());
-            }
-            // 干燥机设定的温度下限
-            BigDecimal dryerMinTemperature = MachineParamUtil.getBigDecimal(params, "set_lower_temperature_limit", "value", BigDecimal.ZERO);
-            // 干燥机设定的温度上限
-            BigDecimal dryerMaxTemperature = MachineParamUtil.getBigDecimal(params, "set_upper_temperature_limit", "value", null);
-
-            // 判断是否在设定配置的的范围中
-            boolean inSettingsTempRange = MachineParamUtil.isValueInRange(currentTemperature, dto.getMinTemperature(), dto.getMaxTemperature());
-            dto.setInSettingsTempRange(inSettingsTempRange);
-
-            // 判断是否在机器设定的的范围中
-            if (dryerMaxTemperature != null) {
-                boolean inMachineTempRange = MachineParamUtil.isValueInRange(currentTemperature, dryerMinTemperature, dryerMaxTemperature);
-                dto.setInMachineTempRange(inMachineTempRange);
-            }
-
-            // 判断是否在设定配置的时间范围中
-            boolean inSettingsTimeRange = MachineParamUtil.isValueInRange(BigDecimal.valueOf(dto.getDryingDuration()), dto.getMinTime(), dto.getMaxTime());
-            dto.setInSettingsTimeRange(inSettingsTimeRange);
-
-        }
-
-        WebSocketMessage webSocketMessage = getWebSocketMessage(runningFeedingDetails);
-        String channelId = WebSocketConstants.MES_SUPPORT_MACHINE_NOTICE + machineId;
-        webSocketPublishService.publish(channelId, webSocketMessage);
+    private void sendDryingMachineNoticeToClients(Long machineId, Map<String, Object> noticeData) throws Exception {
+        // 下发告警通知到机边客户端
+        sendDryingMachineNoticeToMachineClient(machineId, noticeData);
+        // 下发告警通知到加料客户端
+        sendDryingMachineNoticeToMaterialClient(machineId, noticeData);
     }
 
-    private WebSocketMessage getWebSocketMessage(List<MachineFeedingTaskDetailDto> runningFeedingDetails) {
-        boolean outOfTemperatureLimit = false;
-        boolean outOfTimeLimit = false;
-        for (MachineFeedingTaskDetailDto paramsVo : runningFeedingDetails) {
-            if (!outOfTemperatureLimit) {
-                Boolean inSettingsTempRange = paramsVo.getInSettingsTempRange();
-                Boolean inMachineTempRange = paramsVo.getInMachineTempRange();
-                if (Boolean.FALSE.equals(inSettingsTempRange)) {
-                    outOfTemperatureLimit = true;
-                }
-                if (inMachineTempRange != null && inMachineTempRange.equals(Boolean.FALSE)) {
-                    outOfTemperatureLimit = true;
-                }
-            }
-            if (!outOfTimeLimit) {
-                Boolean inSettingsTimeRange = paramsVo.getInSettingsTimeRange();
-                if (Boolean.FALSE.equals(inSettingsTimeRange)) {
-                    outOfTimeLimit = true;
-                }
-            }
+
+    /**
+     * 下发告警通知到机边客户端
+     *
+     * @param machineId
+     * @param noticeData
+     * @throws Exception
+     */
+    private void sendDryingMachineNoticeToMachineClient(Long machineId, Map<String, Object> noticeData) throws Exception {
+        WebSocketMessage msg = buildWebSocketMessage("MES_SUPPORT_MACHINE_NOTICE", noticeData);
+        String channelId = WebSocketConstants.MES_SUPPORT_MACHINE_NOTICE + machineId;
+        webSocketPublishService.publish(channelId, msg);
+    }
+
+    /**
+     * 下发告警通知到加料客户端
+     *
+     * @param machineId
+     * @param noticeData
+     * @throws Exception
+     */
+    private void sendDryingMachineNoticeToMaterialClient(Long machineId, Map<String, Object> noticeData) throws Exception {
+        OrganInfoDto organInfoDto = machineService.selectOrganizationInfo(machineId);
+        if (organInfoDto == null) {
+            log.error("==>sendDryingMachineNoticeToMaterialClient organInfoDto is empty!! machineId:{}", machineId);
+            return;
         }
+        WebSocketMessage msg = buildWebSocketMessage("MES_WORKSHOP_SUPPORT_MACHINE_NOTICE", noticeData);
+        String channelId = WebSocketConstants.MES_WORKSHOP_SUPPORT_MACHINE_NOTICE + organInfoDto.getWorkshopId();
+        webSocketPublishService.publish(channelId, msg);
+    }
 
-        Map<String, Object> data = new HashMap<>();
-        data.put("supportMachineType", "drying_machine");
-        data.put("outOfTemperatureLimit", outOfTemperatureLimit);
-        data.put("outOfTimeLimit", outOfTimeLimit);
 
+    /**
+     * 构建消息对象
+     *
+     * @param bizType
+     * @param noticeData
+     * @return
+     */
+    private WebSocketMessage buildWebSocketMessage(String bizType, Map<String, Object> noticeData) {
         WebSocketMessage webSocketMsg = new WebSocketMessage();
-        webSocketMsg.setBizType("MES_SUPPORT_MACHINE_NOTICE");
-        webSocketMsg.setData(data);
-
+        webSocketMsg.setBizType(bizType);
+        webSocketMsg.setData(noticeData);
         return webSocketMsg;
     }
 
+    /**
+     * 下发干燥机参数WS消息到机边客户端-干燥机详情
+     *
+     * @param machineId
+     * @param runningFeedingDetails
+     * @throws Exception
+     */
     private void sendDryingMachineParamsToMachineClient(Long machineId, List<MachineFeedingTaskDetailDto> runningFeedingDetails) throws Exception {
         String channelId = WebSocketConstants.PLASTIC_DRYER_PARAMS + machineId;
         webSocketPublishService.publish(channelId, runningFeedingDetails);
     }
 
+    /**
+     * 获取获取机器参数
+     *
+     * @param feedingTaskOrderDetails
+     * @return
+     */
     private List<MachineFeedingTaskDetailDto> getDryingMachineParams(List<MachineFeedingTaskDetailDto> feedingTaskOrderDetails) {
         for (MachineFeedingTaskDetailDto detailDto : feedingTaskOrderDetails) {
             // 获取redis缓存信息
@@ -266,6 +261,93 @@ public class DryingMachineMessageHandler implements MqttMessageHandler {
                 return false;
             }
         }
+    }
+
+    /**
+     * 获取 范围比较结果
+     *
+     * @param machineId
+     * @param feedingDetails
+     * @return
+     */
+    private void getRangeComparisonResults(Long machineId, List<MachineFeedingTaskDetailDto> feedingDetails) {
+
+        if (CollectionUtils.isEmpty(feedingDetails)) {
+            return;
+        }
+        for (MachineFeedingTaskDetailDto dto : feedingDetails) {
+            // 设定ID
+            DryingMachineParams machineParams = dto.getMachineParams();
+            Map<String, Map<String, Object>> params = machineParams.getParams();
+
+            if (params == null || params.isEmpty()) {
+                continue;
+            }
+            // 干燥机设定的温度范围
+            // 实际温度
+            BigDecimal currentTemperature = MachineParamUtil.getBigDecimal(params, "actual_temperature", "value", null);
+            if (currentTemperature == null) {
+                log.warn("actual_temperature is empty!! machineId: {}, Dryer: {}", machineId, machineParams.getSupportMachineCode());
+            }
+            // 干燥机设定的温度下限
+            BigDecimal dryerMinTemperature = MachineParamUtil.getBigDecimal(params, "set_lower_temperature_limit", "value", BigDecimal.ZERO);
+            // 干燥机设定的温度上限
+            BigDecimal dryerMaxTemperature = MachineParamUtil.getBigDecimal(params, "set_upper_temperature_limit", "value", null);
+
+            // 判断是否在设定配置的的范围中
+            boolean inSettingsTempRange = MachineParamUtil.isValueInRange(currentTemperature, dto.getMinTemperature(), dto.getMaxTemperature());
+            dto.setInSettingsTempRange(inSettingsTempRange);
+
+            // 判断是否在机器设定的的范围中
+            if (dryerMaxTemperature != null) {
+                boolean inMachineTempRange = MachineParamUtil.isValueInRange(currentTemperature, dryerMinTemperature, dryerMaxTemperature);
+                dto.setInMachineTempRange(inMachineTempRange);
+            }
+
+            // 判断是否在设定配置的时间范围中
+            boolean inSettingsTimeRange = MachineParamUtil.isValueInRange(BigDecimal.valueOf(dto.getDryingDuration()), dto.getMinTime(), dto.getMaxTime());
+            dto.setInSettingsTimeRange(inSettingsTimeRange);
+        }
+
+    }
+
+    /**
+     * 获取机台-干燥剂通知数据
+     *
+     * @param machineId
+     * @param feedingTaskDetailDtos
+     * @return
+     */
+    private Map<String, Object> getDryingMachineNoticeData(Long machineId, List<MachineFeedingTaskDetailDto> feedingTaskDetailDtos) {
+
+        boolean outOfTemperatureLimit = false;
+        boolean outOfTimeLimit = false;
+        for (MachineFeedingTaskDetailDto paramsVo : feedingTaskDetailDtos) {
+            if (!outOfTemperatureLimit) {
+                Boolean inSettingsTempRange = paramsVo.getInSettingsTempRange();
+                Boolean inMachineTempRange = paramsVo.getInMachineTempRange();
+                if (Boolean.FALSE.equals(inSettingsTempRange)) {
+                    outOfTemperatureLimit = true;
+                }
+                if (inMachineTempRange != null && inMachineTempRange.equals(Boolean.FALSE)) {
+                    outOfTemperatureLimit = true;
+                }
+            }
+            if (!outOfTimeLimit) {
+                Boolean inSettingsTimeRange = paramsVo.getInSettingsTimeRange();
+                if (Boolean.FALSE.equals(inSettingsTimeRange)) {
+                    outOfTimeLimit = true;
+                }
+            }
+        }
+
+        Map<String, Object> data = new HashMap<>();
+        data.put("machineId", machineId);
+        data.put("supportMachineType", "drying_machine");
+        data.put("outOfTemperatureLimit", outOfTemperatureLimit);
+        data.put("outOfTimeLimit", outOfTimeLimit);
+
+        return data;
     }
 
 }

@@ -87,4 +87,9 @@ public class WebSocketConstants {
      */
     public static final String MES_SUPPORT_MACHINE_NOTICE = "MES_SUPPORT_MACHINE_NOTICE" + WEB_SOCKET_CONNECT_LINE;
 
+    /**
+     * 加料客户端-辅机提醒通知 实时更新监听频道
+     */
+    public static final String MES_WORKSHOP_SUPPORT_MACHINE_NOTICE = "MES_WORKSHOP_SUPPORT_MACHINE_NOTICE" + WEB_SOCKET_CONNECT_LINE;
+
 }
