@@ -346,6 +346,8 @@ public class DryingMachineMessageHandler implements MqttMessageHandler {
         data.put("supportMachineType", "drying_machine");
         data.put("outOfTemperatureLimit", outOfTemperatureLimit);
         data.put("outOfTimeLimit", outOfTimeLimit);
+        // 是否告警: 1 告警 ， 0 不告警/停止告警
+        data.put("isAlarm", 1);
 
         return data;
     }

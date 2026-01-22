@@ -226,7 +226,9 @@ public class MoldTemperatureMachineMessageHandler implements MqttMessageHandler 
         Map<String, Object> data = new HashMap<>();
         data.put("supportMachineType", "mold_temperature_machine");
         data.put("outOfTemperatureLimit", outOfTemperatureLimit);
-
+        // 是否告警: 1 告警 ， 0 不告警/停止告警
+        data.put("isAlarm", 1);
+        
         WebSocketMessage webSocketMsg = new WebSocketMessage();
         webSocketMsg.setBizType("MES_SUPPORT_MACHINE_NOTICE");
         webSocketMsg.setData(data);
