@@ -200,6 +200,7 @@
             <if test="latestFlag != null "> and latest_flag = #{latestFlag}</if>
             <if test="resetFlag != null "> AND reset_flag = #{resetFlag}</if>
         </where>
+        ORDER BY det.material_id
     </select>
 
     <select id="getMachineFeedingTaskDetailStatDtos" resultType="com.cf.mes.domain.dto.FeedingTaskDetailStatDto">
