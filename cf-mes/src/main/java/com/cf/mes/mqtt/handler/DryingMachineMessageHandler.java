@@ -281,7 +281,8 @@ public class DryingMachineMessageHandler implements MqttMessageHandler {
             Map<String, Map<String, Object>> params = machineParams.getParams();
 
             if (params == null || params.isEmpty()) {
-                continue;
+                params = Collections.emptyMap();
+                //continue;
             }
             // 干燥机设定的温度范围
             // 实际温度
