@@ -56,6 +56,9 @@ services:
       # 证书配置
       TRUST_STORE: /app/ssl/server.jks
       TRUST_STORE_PASSWORD: admin123
+      # 客户端通知配置
+      # 是否严格校验烤料时间，如果是，烤料时间必须处于标准时间范围内,才不会报警; 如果否，烤料时间大于等于最小标准烤料时长即可
+      CLIENT_DRYER_NOTICE_DRYING_TIME_STRICT_CHECK: false
 
       JAVA_OPTS: >-
         -Xms2048m -Xmx2048m

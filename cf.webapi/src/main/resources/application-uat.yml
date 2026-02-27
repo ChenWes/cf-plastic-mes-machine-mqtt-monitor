@@ -198,3 +198,11 @@ cf-monitor:
     password: ${CF_MONITOR_MQTT_PASSWORD:}
     timeout: ${CF_MONITOR_MQTT_TIMEOUT:10}
     keepalive: ${CF_MONITOR_MQTT_KEEPALIVE:20}
+
+## 客户端通知配置
+client:
+  notice:
+    # 模温机温度检查
+    dryer-notice:
+      # 是否严格校验烤料时间，如果是，烤料时间必须处于标准时间范围内,才不会报警; 如果否，烤料时间大于等于最小标准烤料时长即可
+      drying-time-strict-check: ${CLIENT_DRYER_NOTICE_DRYING_TIME_STRICT_CHECK:true}
