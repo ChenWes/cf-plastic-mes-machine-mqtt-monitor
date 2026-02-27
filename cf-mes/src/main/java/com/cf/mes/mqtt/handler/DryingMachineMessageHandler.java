@@ -23,6 +23,7 @@ import com.cf.mqtt.handler.MqttMessageHandler;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.integration.mqtt.support.MqttHeaders;
 import org.springframework.messaging.Message;
 import org.springframework.messaging.MessageHeaders;
@@ -60,6 +61,8 @@ public class DryingMachineMessageHandler implements MqttMessageHandler {
     @Autowired
     private IMachineService machineService;
 
+    @Value("${client.notice.dryer-notice.drying-time-strict-check}")
+    private boolean dryingTimeStrictCheck;
 
     @Override
     public String topic() {
@@ -306,7 +309,11 @@ public class DryingMachineMessageHandler implements MqttMessageHandler {
             }
 
             // 判断是否在设定配置的时间范围中
-            boolean inSettingsTimeRange = MachineParamUtil.isValueInRange(BigDecimal.valueOf(dto.getDryingDuration()), dto.getMinTime(), dto.getMaxTime());
+            BigDecimal maxTime = dto.getMaxTime();
+            if (!dryingTimeStrictCheck) {
+                maxTime = null;
+            }
+            boolean inSettingsTimeRange = MachineParamUtil.isValueInRange(BigDecimal.valueOf(dto.getDryingDuration()), dto.getMinTime(), maxTime);
             dto.setInSettingsTimeRange(inSettingsTimeRange);
         }
 
