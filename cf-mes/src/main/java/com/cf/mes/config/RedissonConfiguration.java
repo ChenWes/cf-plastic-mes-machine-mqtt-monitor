@@ -18,7 +18,7 @@ public class RedissonConfiguration {
     private RedissonConfig redissonConfig;*/
 
     @Value("${spring.redis.host}")
-   private String host;
+    private String host;
     @Value("${spring.redis.port}")
     private String port;
 
@@ -48,6 +48,9 @@ public class RedissonConfiguration {
         //Config config = Config.fromJSON(redissonConfig.getConfigJson());
         Config config = new Config();
         config.useSingleServer().setAddress("redis://" + host + ":" + port);
+        if (password != null && !password.isEmpty()) {
+            config.useSingleServer().setPassword(password);
+        }
         return Redisson.create(config);
     }
 

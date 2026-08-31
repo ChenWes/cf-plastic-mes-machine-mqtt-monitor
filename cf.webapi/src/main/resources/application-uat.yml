@@ -71,7 +71,7 @@ spring:
     # 端口，默认为6379
     port: ${REDIS_PORT:6379}
     # 密码
-    password: ${REDIS_PASSWORD:}
+    password: ${REDIS_PASSWORD:admin!23chen}
     # 连接超时时间
     timeout: 10s
     lettuce:
@@ -164,6 +164,7 @@ jetcache:
         maxTotal: 50
       host: ${spring.redis.host}
       port: ${spring.redis.port}
+      password: ${spring.redis.password}
 
 ## xxl-job 调度任务配置
 xxl:
